@@ -336,7 +336,7 @@ function deviceId(){
 }
 const DEVICE=deviceId();
 
-let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={};
+let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={},QUALS=[];
 let current=null, view="browse";
 let detailTab="";   /* 'specific' | 'orientation' | 'photo' */
 let NODES=[];        /* {id,parentId,branch,code,name} */
@@ -401,6 +401,7 @@ async function loadRef(){
   NS={}; (d.nervous||[]).forEach(function(r){NS[r.code]=r;});
   PL={}; (d.planets||[]).forEach(function(r){PL[r.code]=r;});
   OC={}; (d.organs||[]).forEach(function(r){OC[r.code]=r;});
+  QUALS = d.quals||[];
   IMG={}; (d.images||[]).forEach(function(r){
     const k=r.dimension_table+"|"+r.dimension_code;
     (IMG[k]=IMG[k]||[]).push(r);
@@ -424,13 +425,22 @@ function natSort(a,b){
   }
   return 0;
 }
+function isQualRoot(code){ return QUALS.some(function(q){return q.code===code;}); }
+
 function kids(code){
   const has=(code!==null&&code!==undefined&&code!=="");
   const depth=has?code.split(".").length+1:1;
   return TREE.filter(function(n){
     if(n.level!==depth) return false;
-    if(!has) return true;
+    if(!has) return !isQualRoot(n.code);   /* qualifier lists live in their own tab */
     return n.code.indexOf(code+".")===0 && n.code.split(".").length===depth;
+  }).sort(natSort);
+}
+
+/* the items of a qualifier list, e.g. Orientation */
+function qualItems(setCode){
+  return TREE.filter(function(n){
+    return n.code.indexOf(setCode+".")===0 && n.code.split(".").length===2;
   }).sort(natSort);
 }
 function ancestors(code){
@@ -617,20 +627,42 @@ function render(){
   const nPhoto      = node ? imageCount(node.code) : 0;
 
   /* pick a sensible default tab */
+  /* qualifier sets that actually contain something */
+  const qsets = QUALS.filter(function(q){ return qualItems(q.code).length>0; });
+
   if(!detailTab) detailTab = hasKidsHere ? "specific" : "photo";
   if(detailTab==="photo" && !nPhoto)         detailTab = "specific";
-  if(detailTab==="specific" && !hasKidsHere) detailTab = nPhoto ? "photo" : "specific";
+  if(detailTab==="specific" && !hasKidsHere) detailTab = nPhoto ? "photo" : (qsets.length?("q:"+qsets[0].code):"specific");
 
-  const tabCount = (hasKidsHere?1:0)+(nPhoto?1:0);
+  const tabCount = (hasKidsHere?1:0)+(nPhoto?1:0)+(node?qsets.length:0);
 
   if(node && tabCount>1){
     h+='<div class="dtabs">';
     if(hasKidsHere) h+='<button class="dtab'+(detailTab==="specific"?" on":"")+'" onclick="setDetailTab(&#39;specific&#39;)">More specific<span class="n">'+ch.length+'</span></button>';
     if(nPhoto)      h+='<button class="dtab'+(detailTab==="photo"?" on":"")+'" onclick="setDetailTab(&#39;photo&#39;)">Photo<span class="n">'+nPhoto+'</span></button>';
+    if(node) qsets.forEach(function(q){
+      h+='<button class="dtab'+(detailTab==="q:"+q.code?" on":"")+'" onclick="setDetailTab(&#39;q:'+q.code+'&#39;)">'+q.label+'</button>';
+    });
     h+='</div>';
   }
 
-  if(detailTab==="photo" && nPhoto){
+  if(detailTab.indexOf("q:")===0){
+    const setCode=detailTab.slice(2);
+    const q=QUALS.find(function(x){return x.code===setCode;});
+    const items=qualItems(setCode);
+    if(q&&q.note) h+='<div class="note" style="margin-bottom:14px">'+q.note+'</div>';
+    h+='<div class="grid">';
+    items.forEach(function(it){
+      const p=picked(it.code);
+      h+='<div class="card'+(p?" picked":"")+'" onclick="togglePick(&#39;'+it.code+'&#39;)">' +
+         '<div class="c-accent" style="background:var(--em)"></div>' +
+         '<div class="c-code">'+it.code+'</div><div class="c-name">'+it.name+'</div>' +
+         '<div class="c-foot"><span></span>' +
+         '<button class="c-add'+(p?" on":"")+'" onclick="togglePick(&#39;'+it.code+'&#39;,event)">'+(p?"✓":"+")+'</button>' +
+         '</div></div>';
+    });
+    h+='</div>';
+  } else if(detailTab==="photo" && nPhoto){
     h+=imagesHTML(node.code);
   } else if(hasKidsHere){
     const wide = !current;
