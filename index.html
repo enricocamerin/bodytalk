@@ -1016,21 +1016,39 @@ function savedTree(rows,pid){
   });
   return h;
 }
+function savedSeg(code){
+  if(!code) return "protocol";
+  return (ENTRY[code] || isFromEntrySet(code)) ? "acim" : "protocol";
+}
+
 function savedChain(rows,node){
-  let h='<div class="chain">';
-  const subs=[]; let cur=node, first=true;
+  const subs=[]; const runs=[];
+  let cur=node;
   while(cur){
-    if(!first) h+='<span class="link">\u2014</span>';
-    const nm=(byCode[cur.protocol_code]||{}).name||"\u2014";
-    h+='<span class="chip"><span class="cc">'+cur.protocol_code+'</span>'+nm+'</span>';
-    first=false;
+    const sg=savedSeg(cur.protocol_code);
+    if(!runs.length || runs[runs.length-1].seg!==sg) runs.push({seg:sg,nodes:[]});
+    runs[runs.length-1].nodes.push(cur);
     const ch=rows.filter(function(x){return x.parent_id===cur.id;});
     ch.filter(function(c){return c.is_branch;}).forEach(function(c){
       subs.push({ node:c, from:cur.id });
     });
     cur=ch.find(function(c){return !c.is_branch;})||null;
   }
-  h+='</div>';
+
+  let h="";
+  runs.forEach(function(run,i){
+    if(i) h+='<div class="seg-join">\u2193</div>';
+    h+='<div class="seg '+run.seg+'">' +
+       '<span class="seg-label">'+(run.seg==="acim"?"ACIM \u00B7 forgiveness":"BodyTalk protocol")+'</span>' +
+       '<div class="chain">';
+    run.nodes.forEach(function(n,j){
+      if(j) h+='<span class="link">\u2014</span>';
+      const nm=(byCode[n.protocol_code]||{}).name||"\u2014";
+      h+='<span class="chip" data-chip="'+n.id+'"><span class="cc">'+n.protocol_code+'</span>'+nm+'</span>';
+    });
+    h+='</div></div>';
+  });
+
   subs.forEach(function(s){
     h+='<div class="sub" data-from="'+s.from+'">'+savedChain(rows,s.node)+'</div>';
   });
