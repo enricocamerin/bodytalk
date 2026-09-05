@@ -606,6 +606,13 @@ function dimHTML(code){
   return h;
 }
 
+function physOf(code){
+  const lk=LINKS[code];
+  if(!lk||lk.table!=="dim_organ_component") return null;
+  const d=OC[lk.code];
+  return (d&&d.physiology) ? d : null;
+}
+
 function imageCount(code){
   const lk=LINKS[code]; if(!lk) return 0;
   const l=IMG[lk.table+"|"+lk.code];
@@ -641,6 +648,7 @@ function render(){
   const hasDesc     = node && !!LINKS[node.code] && !!dimFields(node.code);
   const nPhoto      = node ? imageCount(node.code) : 0;
   const kwList      = node ? (KW[node.code]||[]) : [];
+  const phys        = node ? physOf(node.code) : null;
 
   /* pick a sensible default tab */
   /* qualifier sets that actually contain something */
@@ -655,12 +663,14 @@ function render(){
           !qsets.some(function(q){return "q:"+q.code===detailTab;})) detailTab = "";
 
   if(detailTab==="keyword" && !kwList.length) detailTab = "";
-  const hasAnyTab = hasKidsHere || nPhoto || kwList.length || (node && qsets.length);
+  if(detailTab==="phys" && !phys) detailTab = "";
+  const hasAnyTab = hasKidsHere || nPhoto || kwList.length || phys || (node && qsets.length);
 
   if(node && hasAnyTab){
     h+='<div class="dtabs">';
     if(hasKidsHere) h+='<button class="dtab'+(detailTab==="specific"?" on":"")+'" onclick="setDetailTab(&#39;specific&#39;)">More specific<span class="n">'+ch.length+'</span></button>';
     if(nPhoto)      h+='<button class="dtab'+(detailTab==="photo"?" on":"")+'" onclick="setDetailTab(&#39;photo&#39;)">Photo<span class="n">'+nPhoto+'</span></button>';
+    if(phys)          h+='<button class="dtab'+(detailTab==="phys"?" on":"")+'" onclick="setDetailTab(&#39;phys&#39;)">Physiology</button>';
     if(kwList.length) h+='<button class="dtab'+(detailTab==="keyword"?" on":"")+'" onclick="setDetailTab(&#39;keyword&#39;)">Keyword<span class="n">'+kwList.length+'</span></button>';
     if(node) qsets.forEach(function(q){
       h+='<button class="dtab'+(detailTab==="q:"+q.code?" on":"")+'" onclick="setDetailTab(&#39;q:'+q.code+'&#39;)">'+q.label+'</button>';
@@ -668,7 +678,12 @@ function render(){
     h+='</div>';
   }
 
-  if(detailTab==="keyword" && kwList.length){
+  if(detailTab==="phys" && phys){
+    h+='<div class="field" style="margin-top:18px"><div class="field-label">Physiology</div>' +
+       '<div class="field-body">'+phys.physiology+'</div></div>';
+    if(phys.physiology_source)
+      h+='<div class="kw-src">'+phys.physiology_source+'</div>';
+  } else if(detailTab==="keyword" && kwList.length){
     h+='<div class="kw-wrap">';
     kwList.forEach(function(k){ h+='<span class="kw">'+k.keyword+'</span>'; });
     h+='</div>';
