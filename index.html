@@ -676,10 +676,10 @@ function render(){
 
   if(detailTab==="keyword" && !kwList.length) detailTab = "";
   if(detailTab==="phys" && !phys) detailTab = "";
-  /* an entry point opens straight onto the list it hands over to */
-  if(ep && ep.next_set && detailTab==="") detailTab = "q:"+ep.next_set;
+  const isEntryNode = !!(ep && ep.next_set);
 
-  const hasAnyTab = hasKidsHere || nPhoto || kwList.length || phys || (node && qsets.length);
+  const hasAnyTab = !isEntryNode &&
+    (hasKidsHere || nPhoto || kwList.length || phys || (node && qsets.length));
 
   if(node && hasAnyTab){
     h+='<div class="dtabs">';
@@ -695,10 +695,24 @@ function render(){
 
   if(ep){
     h+='<div class="note" style="margin-top:16px;border-left:3px solid var(--em)">' +
-       '<b>'+ep.flow+'</b><br>'+ep.description+'</div>';
+       '<b>'+ep.flow+'</b></div>';
   }
 
-  if(detailTab==="phys" && phys){
+  if(isEntryNode){
+    const items = qualItems(ep.next_set);
+    h+='<div class="grid">';
+    items.forEach(function(it){
+      const p=picked(it.code);
+      h+='<div class="card'+(p?" picked":"")+'" onclick="togglePick(&#39;'+it.code+'&#39;)">' +
+         '<div class="c-accent" style="background:var(--em)"></div>' +
+         '<div class="c-name">'+it.name+'</div>' +
+         '<div class="c-foot"><span></span>' +
+         '<button class="c-add'+(p?" on":"")+'" onclick="togglePick(&#39;'+it.code+'&#39;,event)">'+(p?"✓":"+")+'</button>' +
+         '</div></div>';
+    });
+    h+='</div>';
+    h+='<div class="note" style="margin-top:18px">Pick what is to be forgiven, then go back and continue into the BodyTalk protocol \u2014 the formula keeps the whole chain.</div>';
+  } else if(detailTab==="phys" && phys){
     h+='<div class="field" style="margin-top:18px"><div class="field-label">Physiology</div>' +
        '<div class="field-body">'+phys.physiology+'</div></div>';
     if(phys.physiology_source)
