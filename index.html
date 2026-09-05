@@ -130,6 +130,12 @@
   .dtab.on{background:var(--text);color:var(--void);font-weight:600;}
   .dtab .n{font-family:'IBM Plex Mono',monospace;font-size:10px;opacity:.6;margin-left:5px;}
 
+  .kw-wrap{margin-top:16px;display:flex;flex-wrap:wrap;gap:9px;}
+  .kw{background:var(--card);border:1px solid var(--edge-2);border-radius:99px;
+    padding:11px 18px;font-size:15.5px;font-weight:400;letter-spacing:-.01em;}
+  .kw-src{margin-top:16px;font-family:'IBM Plex Mono',monospace;font-size:11px;
+    color:var(--text-3);line-height:1.5;}
+
   .figs{margin-top:16px;display:flex;flex-direction:column;gap:14px;}
   .fig{background:var(--card);border:1px solid var(--edge);border-radius:var(--r);
     overflow:hidden;}
@@ -336,7 +342,7 @@ function deviceId(){
 }
 const DEVICE=deviceId();
 
-let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={},QUALS=[];
+let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={},QUALS=[],KW={};
 let current=null, view="browse";
 let detailTab="";   /* 'specific' | 'orientation' | 'photo' */
 let NODES=[];        /* {id,parentId,branch,code,name} */
@@ -402,6 +408,9 @@ async function loadRef(){
   PL={}; (d.planets||[]).forEach(function(r){PL[r.code]=r;});
   OC={}; (d.organs||[]).forEach(function(r){OC[r.code]=r;});
   QUALS = d.quals||[];
+  KW={}; (d.keywords||[]).forEach(function(r){
+    (KW[r.protocol_code]=KW[r.protocol_code]||[]).push(r);
+  });
   IMG={}; (d.images||[]).forEach(function(r){
     const k=r.dimension_table+"|"+r.dimension_code;
     (IMG[k]=IMG[k]||[]).push(r);
@@ -631,6 +640,7 @@ function render(){
   const hasKidsHere = ch.length>0;
   const hasDesc     = node && !!LINKS[node.code] && !!dimFields(node.code);
   const nPhoto      = node ? imageCount(node.code) : 0;
+  const kwList      = node ? (KW[node.code]||[]) : [];
 
   /* pick a sensible default tab */
   /* qualifier sets that actually contain something */
@@ -644,19 +654,26 @@ function render(){
   else if(detailTab.indexOf("q:")===0 &&
           !qsets.some(function(q){return "q:"+q.code===detailTab;})) detailTab = "";
 
-  const hasAnyTab = hasKidsHere || nPhoto || (node && qsets.length);
+  if(detailTab==="keyword" && !kwList.length) detailTab = "";
+  const hasAnyTab = hasKidsHere || nPhoto || kwList.length || (node && qsets.length);
 
   if(node && hasAnyTab){
     h+='<div class="dtabs">';
     if(hasKidsHere) h+='<button class="dtab'+(detailTab==="specific"?" on":"")+'" onclick="setDetailTab(&#39;specific&#39;)">More specific<span class="n">'+ch.length+'</span></button>';
     if(nPhoto)      h+='<button class="dtab'+(detailTab==="photo"?" on":"")+'" onclick="setDetailTab(&#39;photo&#39;)">Photo<span class="n">'+nPhoto+'</span></button>';
+    if(kwList.length) h+='<button class="dtab'+(detailTab==="keyword"?" on":"")+'" onclick="setDetailTab(&#39;keyword&#39;)">Keyword<span class="n">'+kwList.length+'</span></button>';
     if(node) qsets.forEach(function(q){
       h+='<button class="dtab'+(detailTab==="q:"+q.code?" on":"")+'" onclick="setDetailTab(&#39;q:'+q.code+'&#39;)">'+q.label+'</button>';
     });
     h+='</div>';
   }
 
-  if(detailTab.indexOf("q:")===0){
+  if(detailTab==="keyword" && kwList.length){
+    h+='<div class="kw-wrap">';
+    kwList.forEach(function(k){ h+='<span class="kw">'+k.keyword+'</span>'; });
+    h+='</div>';
+    if(kwList[0].source) h+='<div class="kw-src">'+kwList[0].source+'</div>';
+  } else if(detailTab.indexOf("q:")===0){
     const setCode=detailTab.slice(2);
     const q=QUALS.find(function(x){return x.code===setCode;});
     const items=qualItems(setCode);
