@@ -338,7 +338,7 @@ const DEVICE=deviceId();
 
 let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={};
 let current=null, view="browse";
-let detailTab="details";   /* 'details' | 'image' */
+let detailTab="";   /* 'specific' | 'orientation' | 'photo' */
 let NODES=[];        /* {id,parentId,branch,code,name} */
 let activeId=null;   /* where the next pick attaches */
 let pendingBranch=false;   /* next pick opens a declared sub-formula */
@@ -509,7 +509,7 @@ function clearAll(){
   NODES=[]; activeId=null; pendingBranch=false; render(); renderTray();
 }
 
-function go(code){ current=code; view="browse"; detailTab="details"; syncTabs(); render(); window.scrollTo(0,0); }
+function go(code){ current=code; view="browse"; detailTab=""; syncTabs(); render(); window.scrollTo(0,0); }
 function setDetailTab(t){ detailTab=t; render(); }
 function syncTabs(){
   document.getElementById("tBrowse").classList.toggle("active",view==="browse");
@@ -573,20 +573,6 @@ function dimHTML(code){
     '<div class="note">Linked to the dimension, but the content has not been entered yet. ' +
     'Nothing is shown rather than anything invented.</div>';
   let h='<div class="tag">'+code+' → '+f.dim+' · verified</div>';
-
-  const nImg = imageCount(code);
-  if(nImg){
-    h+='<div class="dtabs">' +
-       '<button class="dtab'+(detailTab==="details"?" on":"")+'" onclick="setDetailTab(&#39;details&#39;)">Details</button>' +
-       '<button class="dtab'+(detailTab==="image"?" on":"")+'" onclick="setDetailTab(&#39;image&#39;)">Image<span class="n">'+nImg+'</span></button>' +
-       '</div>';
-  }
-
-  if(nImg && detailTab==="image"){
-    h+=imagesHTML(code);
-    return h;
-  }
-
   f.rows.forEach(function(r){
     if(!r[1]) return;
     h+='<div class="field"><div class="field-label">'+r[0]+'</div>' +
@@ -625,21 +611,35 @@ function render(){
   }
   h+='<div class="eyebrow">'+(node?node.code:"Protocol")+'</div>';
   h+='<h1>'+(node?node.name:"BodyTalk Protocol")+'</h1>';
-  if(ch.length) h+='<div class="sub">'+ch.length+' inside</div>';
 
-  /* a node can have BOTH its own dimension detail and children:
-     show the detail first, then what is inside it */
-  if(ch.length && node && LINKS[node.code]){
-    h+=dimHTML(node.code);
-    const p=picked(node.code);
-    h+='<button class="btn'+(p?" ghost":"")+'" onclick="togglePick(&#39;'+node.code+'&#39;)">' +
-       (p?"✓ Added":"Add to formula")+'</button>';
-    h+='<div style="height:30px"></div>';
-    h+='<div class="eyebrow" style="color:var(--text-3)">Inside</div>';
+  const hasKidsHere = ch.length>0;
+  const hasOrient   = node && !!LINKS[node.code] && !!dimFields(node.code);
+  const nPhoto      = node ? imageCount(node.code) : 0;
+
+  /* pick a sensible default tab */
+  if(!detailTab){
+    detailTab = hasKidsHere ? "specific" : (hasOrient ? "orientation" : (nPhoto?"photo":"specific"));
+  }
+  if(detailTab==="orientation" && !hasOrient) detailTab = hasKidsHere?"specific":"photo";
+  if(detailTab==="photo" && !nPhoto)          detailTab = hasKidsHere?"specific":"orientation";
+  if(detailTab==="specific" && !hasKidsHere)  detailTab = hasOrient?"orientation":"photo";
+
+  const tabCount = (hasKidsHere?1:0)+(hasOrient?1:0)+(nPhoto?1:0);
+
+  if(node && tabCount>1){
+    h+='<div class="dtabs">';
+    if(hasKidsHere) h+='<button class="dtab'+(detailTab==="specific"?" on":"")+'" onclick="setDetailTab(&#39;specific&#39;)">More specific<span class="n">'+ch.length+'</span></button>';
+    if(hasOrient)   h+='<button class="dtab'+(detailTab==="orientation"?" on":"")+'" onclick="setDetailTab(&#39;orientation&#39;)">Orientation</button>';
+    if(nPhoto)      h+='<button class="dtab'+(detailTab==="photo"?" on":"")+'" onclick="setDetailTab(&#39;photo&#39;)">Photo<span class="n">'+nPhoto+'</span></button>';
+    h+='</div>';
   }
 
-  if(ch.length){
-    const wide = !current;                 /* top level reads as a list */
+  if(detailTab==="orientation" && hasOrient){
+    h+=dimHTML(node.code);
+  } else if(detailTab==="photo" && nPhoto){
+    h+=imagesHTML(node.code);
+  } else if(hasKidsHere){
+    const wide = !current;
     h+='<div class="grid'+(wide?" wide":"")+'">';
     ch.forEach(function(k){
       const n=kids(k.code).length, lk=!!LINKS[k.code], p=picked(k.code);
@@ -659,12 +659,16 @@ function render(){
       h+='</div>';
     });
     h+='</div>';
-  } else if(node){
-    h+=dimHTML(node.code);
+  } else if(node && !hasOrient && !nPhoto){
+    h+='<div class="note">Nothing linked to this node yet.</div>';
+  }
+
+  if(node){
     const p=picked(node.code);
     h+='<button class="btn'+(p?" ghost":"")+'" onclick="togglePick(&#39;'+node.code+'&#39;)">' +
-       (p?"✓ Added":"Add to formula")+'</button>';
+       (p?"✓ Added to formula":"Add to formula")+'</button>';
   }
+
   m.innerHTML=h;
 }
 
