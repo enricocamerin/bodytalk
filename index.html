@@ -318,7 +318,7 @@ function deviceId(){
 }
 const DEVICE=deviceId();
 
-let TREE=[],byCode={},NS={},PL={},LINKS={};
+let TREE=[],byCode={},NS={},PL={},OC={},LINKS={};
 let current=null, view="browse";
 let NODES=[];        /* {id,parentId,branch,code,name} */
 let activeId=null;   /* where the next pick attaches */
@@ -381,6 +381,7 @@ async function loadRef(){
   byCode={}; TREE.forEach(function(n){byCode[n.code]=n;});
   NS={}; (d.nervous||[]).forEach(function(r){NS[r.code]=r;});
   PL={}; (d.planets||[]).forEach(function(r){PL[r.code]=r;});
+  OC={}; (d.organs||[]).forEach(function(r){OC[r.code]=r;});
   LINKS={}; (d.links||[]).forEach(function(l){
     LINKS[l.protocol_code]={table:l.dimension_table,code:l.dimension_code};
   });
@@ -503,6 +504,13 @@ function dimFields(code){
   if(lk.table==="dim_nervous_system"){
     const d=NS[lk.code]; if(!d) return null;
     return {dim:lk.code,rows:[["Anatomy",d.anatomy],["Function",d.function],["Sources",d.sources,1]]};
+  }
+  if(lk.table==="dim_organ_component"){
+    const d=OC[lk.code]; if(!d) return null;
+    return {dim:lk.code,rows:[
+      ["Organ",d.organ],
+      ["Description",d.description],
+      ["Sources",d.sources,1]]};
   }
   if(lk.table==="dim_planet"){
     const d=PL[lk.code]; if(!d) return null;
@@ -834,7 +842,7 @@ const ALIASES={
   "sensi":"five senses","fuoco":"fire","terra":"earth","metallo":"metal","acqua":"water",
   "legno":"wood","testa":"head","schiena":"back","torace":"chest","addome":"abdomen",
   "arti":"limbs","respirazione":"breathing","emozioni":"emotions","corpo":"body",
-  "pianeti":"planets","mercurio":"mercury","venere":"venus","marte":"mars","giove":"jupiter",
+  "cistifellea":"gallbladder","colecisti":"gallbladder","mitocondri":"mitochondria","nucleo":"nucleus","membrana":"membrane","giunzione":"junction","golgi":"golgi","microvilli":"microvilli","glicocalice":"glycocalyx","granuli":"granules","pianeti":"planets","mercurio":"mercury","venere":"venus","marte":"mars","giove":"jupiter",
   "saturno":"saturn","urano":"uranus","nettuno":"neptune","plutone":"pluto","luna":"moon",
   "sole":"sun","cicli":"life cycles"
 };
@@ -963,6 +971,8 @@ function detail(code){
   else{
     const lk=LINKS[code];
     if(lk&&lk.table==="dim_nervous_system"&&NS[lk.code]) say(n.name+". "+NS[lk.code].function);
+    else if(lk&&lk.table==="dim_organ_component"&&OC[lk.code])
+      say(n.name+". "+OC[lk.code].description);
     else if(lk&&lk.table==="dim_planet"&&PL[lk.code]&&PL[lk.code].body_parts_ruled)
       say(n.name+". Parti del corpo: "+PL[lk.code].body_parts_ruled);
     else say(n.name);
