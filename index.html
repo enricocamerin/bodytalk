@@ -186,6 +186,15 @@
   .froot.entry .f-label{color:var(--em);}
   .entry-mark{font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.18em;
     text-transform:uppercase;color:var(--em);margin-bottom:6px;display:block;}
+
+  .seg{border-radius:14px;padding:10px 12px 8px;margin:6px 0;}
+  .seg.acim{background:rgba(61,220,151,.10);border:1px solid rgba(61,220,151,.30);}
+  .seg.protocol{background:rgba(255,255,255,.035);border:1px solid var(--edge);}
+  .seg-label{font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.17em;
+    text-transform:uppercase;margin-bottom:7px;display:block;}
+  .seg.acim .seg-label{color:var(--em);}
+  .seg.protocol .seg-label{color:var(--text-3);}
+  .seg-join{margin-left:14px;color:var(--em);font-size:12px;line-height:1;padding:2px 0;}
   .chain{display:flex;flex-wrap:wrap;align-items:center;gap:5px;}
   .chip{display:inline-flex;align-items:center;gap:8px;background:var(--card);
     border:1px solid var(--edge);border-radius:99px;padding:6px 12px;font-size:12.5px;
@@ -356,6 +365,7 @@ let detailTab="";   /* 'specific' | 'orientation' | 'photo' */
 let NODES=[];        /* {id,parentId,branch,code,name} */
 let activeId=null;   /* where the next pick attaches */
 let pendingBranch=false;   /* next pick opens a declared sub-formula */
+let segment="protocol";    /* 'acim' while the forgiveness part is open */
 let collapsed={};          /* node id -> true when its sub-formula is folded */
 let sessions=[];
 let nid=0;
@@ -476,13 +486,26 @@ function togglePick(code,ev){
   if(ev){ ev.stopPropagation(); }
   const ex=NODES.find(function(n){return n.code===code;});
   if(ex){ removeNode(ex.id); return; }
+  if(!NODES.length){
+    segment = (ENTRY[code] || isFromEntrySet(code)) ? "acim" : "protocol";
+  }
   const id=newId();
-  NODES.push({ id:id, parentId:activeId, branch:pendingBranch,
+  NODES.push({ id:id, parentId:activeId, branch:pendingBranch, segment:segment,
                code:code, name:byCode[code].name });
   pendingBranch=false;
   activeId=id;                       /* the chain continues from here */
   render(); renderTray();
 }
+
+/* is this code one of the items an entry point hands over to? */
+function isFromEntrySet(code){
+  return Object.keys(ENTRY).some(function(k){
+    const ns = ENTRY[k].next_set;
+    return ns && code.indexOf(ns+".")===0;
+  });
+}
+
+function closeAcim(){ segment="protocol"; renderTray(); }
 
 function removeNode(id){
   const kill=[id];
@@ -537,7 +560,7 @@ function newFormula(){ activeId=null; pendingBranch=false; renderTray(); }
 function total(){ return NODES.length; }
 function clearAll(){
   if(!confirm("Clear the current session? Nothing is saved yet.")) return;
-  NODES=[]; activeId=null; pendingBranch=false; render(); renderTray();
+  NODES=[]; activeId=null; pendingBranch=false; segment="protocol"; render(); renderTray();
 }
 
 function go(code){
@@ -801,6 +824,7 @@ function renderTray(){
   const cur=activeId?nodeById(activeId):null;
 
   let h='<div class="tray-head"><div class="tray-title">'+n+' selected</div><div class="tray-btns">' +
+    (segment==="acim" ? '<button class="mini" onclick="closeAcim()">Close ACIM</button>' : '') +
     '<button class="mini" onclick="startSub()" '+(!activeId?"disabled":"")+'>Sub-formula</button>' +
     '<button class="mini" onclick="closeSub()" '+(!insideSub()?"disabled":"")+'>Close sub</button>' +
     '<button class="mini" onclick="newFormula()" '+(!n?"disabled":"")+'>Parallel</button>' +
@@ -837,21 +861,34 @@ function renderTray(){
 /* render a node and everything that continues linearly from it,
    dropping declared sub-formulas underneath, indented */
 function chainHTML(node){
-  let h='<div class="chain">';
+  /* walk the linear chain, splitting it into boxes where the segment changes */
   const subs=[];
-  let cur=node, first=true;
+  const runs=[];
+  let cur=node;
   while(cur){
-    if(!first) h+='<span class="link">\u2014</span>';
-    h+=chipHTML(cur);
-    first=false;
+    const sg = cur.segment || "protocol";
+    if(!runs.length || runs[runs.length-1].seg!==sg) runs.push({seg:sg, nodes:[]});
+    runs[runs.length-1].nodes.push(cur);
     const ch=childrenOfNode(cur.id);
     ch.filter(function(c){return c.branch;}).forEach(function(c){
       subs.push({ node:c, from:cur.id });
     });
-    const next=ch.find(function(c){return !c.branch;});
-    cur=next||null;
+    cur = ch.find(function(c){return !c.branch;}) || null;
   }
-  h+='</div>';
+
+  let h="";
+  runs.forEach(function(run,i){
+    if(i) h+='<div class="seg-join">\u2193</div>';
+    h+='<div class="seg '+run.seg+'">' +
+       '<span class="seg-label">'+(run.seg==="acim"?"ACIM \u00B7 forgiveness":"BodyTalk protocol")+'</span>' +
+       '<div class="chain">';
+    run.nodes.forEach(function(n,j){
+      if(j) h+='<span class="link">\u2014</span>';
+      h+=chipHTML(n);
+    });
+    h+='</div></div>';
+  });
+
   subs.forEach(function(s){
     const folded = !!collapsed[s.node.id];
     h+='<div class="sub" data-from="'+s.from+'"><div class="sub-row">' +
@@ -931,7 +968,7 @@ async function doSave(){
   try{
     await api("?action=save",{method:"POST",headers:{"content-type":"application/json"},
       body:JSON.stringify({device_id:DEVICE,title:title||null,notes:notes||null,session_date:date,steps:steps})});
-    closeSave(); NODES=[]; activeId=null; pendingBranch=false; renderTray();
+    closeSave(); NODES=[]; activeId=null; pendingBranch=false; segment="protocol"; renderTray();
     await loadSessions(); setView("log");
   }catch(e){ b.textContent="Save"; b.disabled=false; alert("Could not save: "+e.message); }
 }
