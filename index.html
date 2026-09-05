@@ -613,30 +613,28 @@ function render(){
   h+='<h1>'+(node?node.name:"BodyTalk Protocol")+'</h1>';
 
   const hasKidsHere = ch.length>0;
-  /* Orientation tab is parked for now — the dimension fields stay in the
-     database and can be switched back on by flipping this to the real check. */
-  const hasOrient   = false;
+  const hasDesc     = node && !!LINKS[node.code] && !!dimFields(node.code);
   const nPhoto      = node ? imageCount(node.code) : 0;
 
   /* pick a sensible default tab */
   if(!detailTab){
-    detailTab = hasKidsHere ? "specific" : (hasOrient ? "orientation" : (nPhoto?"photo":"specific"));
+    detailTab = hasKidsHere ? "specific" : (hasDesc ? "description" : (nPhoto?"photo":"specific"));
   }
-  if(detailTab==="orientation" && !hasOrient) detailTab = hasKidsHere?"specific":"photo";
-  if(detailTab==="photo" && !nPhoto)          detailTab = hasKidsHere?"specific":"orientation";
-  if(detailTab==="specific" && !hasKidsHere)  detailTab = hasOrient?"orientation":"photo";
+  if(detailTab==="description" && !hasDesc)  detailTab = hasKidsHere?"specific":"photo";
+  if(detailTab==="photo" && !nPhoto)         detailTab = hasKidsHere?"specific":"description";
+  if(detailTab==="specific" && !hasKidsHere) detailTab = hasDesc?"description":"photo";
 
-  const tabCount = (hasKidsHere?1:0)+(hasOrient?1:0)+(nPhoto?1:0);
+  const tabCount = (hasKidsHere?1:0)+(hasDesc?1:0)+(nPhoto?1:0);
 
   if(node && tabCount>1){
     h+='<div class="dtabs">';
     if(hasKidsHere) h+='<button class="dtab'+(detailTab==="specific"?" on":"")+'" onclick="setDetailTab(&#39;specific&#39;)">More specific<span class="n">'+ch.length+'</span></button>';
-    if(hasOrient)   h+='<button class="dtab'+(detailTab==="orientation"?" on":"")+'" onclick="setDetailTab(&#39;orientation&#39;)">Orientation</button>';
+    if(hasDesc)     h+='<button class="dtab'+(detailTab==="description"?" on":"")+'" onclick="setDetailTab(&#39;description&#39;)">Description</button>';
     if(nPhoto)      h+='<button class="dtab'+(detailTab==="photo"?" on":"")+'" onclick="setDetailTab(&#39;photo&#39;)">Photo<span class="n">'+nPhoto+'</span></button>';
     h+='</div>';
   }
 
-  if(detailTab==="orientation" && hasOrient){
+  if(detailTab==="description" && hasDesc){
     h+=dimHTML(node.code);
   } else if(detailTab==="photo" && nPhoto){
     h+=imagesHTML(node.code);
@@ -661,7 +659,7 @@ function render(){
       h+='</div>';
     });
     h+='</div>';
-  } else if(node && !hasOrient && !nPhoto){
+  } else if(node && !hasDesc && !nPhoto){
     h+='<div class="note">Nothing linked to this node yet.</div>';
   }
 
