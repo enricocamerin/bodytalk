@@ -195,6 +195,13 @@
   .seg.acim .seg-label{color:var(--em);}
   .seg.protocol .seg-label{color:var(--text-3);}
   .seg-join{margin-left:14px;color:var(--em);font-size:12px;line-height:1;padding:2px 0;}
+
+  .grp{display:inline-flex;flex-direction:column;gap:5px;
+    border:1px dashed var(--edge-2);border-radius:12px;padding:8px 10px 7px;margin:2px 0;}
+  .grp-label{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--text-3);cursor:pointer;}
+  .grp .chain{gap:5px;}
+  .chip.sel{outline:2px solid var(--em);outline-offset:1px;}
   .chain{display:flex;flex-wrap:wrap;align-items:center;gap:5px;}
   .chip{display:inline-flex;align-items:center;gap:8px;background:var(--card);
     border:1px solid var(--edge);border-radius:99px;padding:6px 12px;font-size:12.5px;
@@ -366,6 +373,7 @@ let NODES=[];        /* {id,parentId,branch,code,name} */
 let activeId=null;   /* where the next pick attaches */
 let pendingBranch=false;   /* next pick opens a declared sub-formula */
 let segment="protocol";    /* 'acim' while the forgiveness part is open */
+let selectMode=false, selected={}, groupSeq=0;
 let collapsed={};          /* node id -> true when its sub-formula is folded */
 let sessions=[];
 let nid=0;
@@ -507,6 +515,31 @@ function isFromEntrySet(code){
 
 function closeAcim(){ segment="protocol"; renderTray(); }
 
+function toggleSelectMode(){
+  selectMode=!selectMode;
+  if(!selectMode) selected={};
+  renderTray();
+}
+function toggleSelect(id){
+  if(selected[id]) delete selected[id]; else selected[id]=true;
+  renderTray();
+}
+function selectedCount(){ return Object.keys(selected).length; }
+
+/* wrap the selected chips into a sub-box inside their segment */
+function groupSelected(){
+  const ids=Object.keys(selected);
+  if(ids.length<2) return;
+  const g=++groupSeq;
+  NODES.forEach(function(n){ if(selected[n.id]) n.group=g; });
+  selected={}; selectMode=false;
+  renderTray();
+}
+function ungroup(g){
+  NODES.forEach(function(n){ if(n.group===g) delete n.group; });
+  renderTray();
+}
+
 function removeNode(id){
   const kill=[id];
   for(let i=0;i<kill.length;i++)
@@ -560,7 +593,8 @@ function newFormula(){ activeId=null; pendingBranch=false; renderTray(); }
 function total(){ return NODES.length; }
 function clearAll(){
   if(!confirm("Clear the current session? Nothing is saved yet.")) return;
-  NODES=[]; activeId=null; pendingBranch=false; segment="protocol"; render(); renderTray();
+  NODES=[]; activeId=null; pendingBranch=false; segment="protocol";
+  selectMode=false; selected={}; groupSeq=0; render(); renderTray();
 }
 
 function go(code){
@@ -825,6 +859,8 @@ function renderTray(){
 
   let h='<div class="tray-head"><div class="tray-title">'+n+' selected</div><div class="tray-btns">' +
     (segment==="acim" ? '<button class="mini" onclick="closeAcim()">Close ACIM</button>' : '') +
+    '<button class="mini'+(selectMode?" go":"")+'" onclick="toggleSelectMode()" '+(!n?"disabled":"")+'>'+(selectMode?"Cancel":"Select")+'</button>' +
+    (selectMode&&selectedCount()>1 ? '<button class="mini go" onclick="groupSelected()">Group '+selectedCount()+'</button>' : '') +
     '<button class="mini" onclick="startSub()" '+(!activeId?"disabled":"")+'>Sub-formula</button>' +
     '<button class="mini" onclick="closeSub()" '+(!insideSub()?"disabled":"")+'>Close sub</button>' +
     '<button class="mini" onclick="newFormula()" '+(!n?"disabled":"")+'>Parallel</button>' +
@@ -836,6 +872,9 @@ function renderTray(){
     t.innerHTML=h; return;
   }
 
+  if(selectMode){
+    h+='<div class="hint">Tap chips to select, then press Group to box them together</div>';
+  } else
   h+='<div class="hint">' +
      (pendingBranch ? "Next pick opens a sub-formula under \u201C"+short(cur?cur.name:"")+"\u201D"
        : cur ? "Continues from \u201C"+short(cur.name)+"\u201D" +
@@ -882,9 +921,28 @@ function chainHTML(node){
     h+='<div class="seg '+run.seg+'">' +
        '<span class="seg-label">'+(run.seg==="acim"?"ACIM \u00B7 forgiveness":"BodyTalk protocol")+'</span>' +
        '<div class="chain">';
-    run.nodes.forEach(function(n,j){
-      if(j) h+='<span class="link">\u2014</span>';
-      h+=chipHTML(n);
+    /* consecutive nodes sharing a group id sit in their own sub-box */
+    const blocks=[];
+    run.nodes.forEach(function(n){
+      const g=n.group||null;
+      if(!blocks.length || blocks[blocks.length-1].g!==g) blocks.push({g:g,nodes:[]});
+      blocks[blocks.length-1].nodes.push(n);
+    });
+    blocks.forEach(function(b,bi){
+      if(bi) h+='<span class="link">\u2014</span>';
+      if(b.g){
+        h+='<span class="grp"><span class="grp-label" onclick="ungroup('+b.g+')">Group \u00B7 '+b.nodes.length+' \u00B7 tap to undo</span><span class="chain">';
+        b.nodes.forEach(function(n,j){
+          if(j) h+='<span class="link">\u2014</span>';
+          h+=chipHTML(n);
+        });
+        h+='</span></span>';
+      } else {
+        b.nodes.forEach(function(n,j){
+          if(j) h+='<span class="link">\u2014</span>';
+          h+=chipHTML(n);
+        });
+      }
     });
     h+='</div></div>';
   });
@@ -932,10 +990,14 @@ function alignSubs(scope){
 
 function chipHTML(nd){
   const here=nd.id===activeId;
-  return '<span class="chip'+(here?" here":"")+'" data-chip="'+nd.id+'" ' +
-    'onclick="setActive(&#39;'+nd.id+'&#39;,event)">' +
+  const sel=!!selected[nd.id];
+  const act = selectMode ? 'toggleSelect(&#39;'+nd.id+'&#39;)'
+                         : 'setActive(&#39;'+nd.id+'&#39;,event)';
+  return '<span class="chip'+(here?" here":"")+(sel?" sel":"")+'" data-chip="'+nd.id+'" ' +
+    'onclick="'+act+'">' +
     '<span class="cc">'+nd.code+'</span>'+short(nd.name)+
-    '<span class="x" onclick="removeNode(&#39;'+nd.id+'&#39;)">\u00D7</span></span>';
+    (selectMode?'':'<span class="x" onclick="removeNode(&#39;'+nd.id+'&#39;)">\u00D7</span>')+
+    '</span>';
 }
 
 /* ---------- save / log ---------- */
@@ -962,13 +1024,15 @@ async function doSave(){
     order[key]=(order[key]||0)+1;
     return { tmp:nd.id, parent_tmp:nd.parentId, kind:"step",
              is_branch: !!nd.branch, step_no:order[key],
+             group_no: nd.group || null,
              protocol_code: nd.code };
   });
   const b=document.querySelector(".mb .go"); b.textContent="Saving"; b.disabled=true;
   try{
     await api("?action=save",{method:"POST",headers:{"content-type":"application/json"},
       body:JSON.stringify({device_id:DEVICE,title:title||null,notes:notes||null,session_date:date,steps:steps})});
-    closeSave(); NODES=[]; activeId=null; pendingBranch=false; segment="protocol"; renderTray();
+    closeSave(); NODES=[]; activeId=null; pendingBranch=false; segment="protocol";
+    selectMode=false; selected={}; groupSeq=0; renderTray();
     await loadSessions(); setView("log");
   }catch(e){ b.textContent="Save"; b.disabled=false; alert("Could not save: "+e.message); }
 }
@@ -1041,10 +1105,22 @@ function savedChain(rows,node){
     h+='<div class="seg '+run.seg+'">' +
        '<span class="seg-label">'+(run.seg==="acim"?"ACIM \u00B7 forgiveness":"BodyTalk protocol")+'</span>' +
        '<div class="chain">';
-    run.nodes.forEach(function(n,j){
-      if(j) h+='<span class="link">\u2014</span>';
-      const nm=(byCode[n.protocol_code]||{}).name||"\u2014";
-      h+='<span class="chip" data-chip="'+n.id+'"><span class="cc">'+n.protocol_code+'</span>'+nm+'</span>';
+    const blocks=[];
+    run.nodes.forEach(function(n){
+      const g=n.group_no||null;
+      if(!blocks.length || blocks[blocks.length-1].g!==g) blocks.push({g:g,nodes:[]});
+      blocks[blocks.length-1].nodes.push(n);
+    });
+    blocks.forEach(function(b,bi){
+      if(bi) h+='<span class="link">\u2014</span>';
+      const open = b.g ? '<span class="grp"><span class="grp-label">Group \u00B7 '+b.nodes.length+'</span><span class="chain">' : '';
+      h+=open;
+      b.nodes.forEach(function(n,j){
+        if(j) h+='<span class="link">\u2014</span>';
+        const nm=(byCode[n.protocol_code]||{}).name||"\u2014";
+        h+='<span class="chip" data-chip="'+n.id+'"><span class="cc">'+n.protocol_code+'</span>'+nm+'</span>';
+      });
+      if(b.g) h+='</span></span>';
     });
     h+='</div></div>';
   });
