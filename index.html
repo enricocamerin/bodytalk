@@ -599,6 +599,17 @@ function render(){
   h+='<h1>'+(node?node.name:"BodyTalk Protocol")+'</h1>';
   if(ch.length) h+='<div class="sub">'+ch.length+' inside</div>';
 
+  /* a node can have BOTH its own dimension detail and children:
+     show the detail first, then what is inside it */
+  if(ch.length && node && LINKS[node.code]){
+    h+=dimHTML(node.code);
+    const p=picked(node.code);
+    h+='<button class="btn'+(p?" ghost":"")+'" onclick="togglePick(&#39;'+node.code+'&#39;)">' +
+       (p?"✓ Added":"Add to formula")+'</button>';
+    h+='<div style="height:30px"></div>';
+    h+='<div class="eyebrow" style="color:var(--text-3)">Inside</div>';
+  }
+
   if(ch.length){
     const wide = !current;                 /* top level reads as a list */
     h+='<div class="grid'+(wide?" wide":"")+'">';
