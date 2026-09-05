@@ -613,7 +613,9 @@ function render(){
   h+='<h1>'+(node?node.name:"BodyTalk Protocol")+'</h1>';
 
   const hasKidsHere = ch.length>0;
-  const hasOrient   = node && !!LINKS[node.code] && !!dimFields(node.code);
+  /* Orientation tab is parked for now — the dimension fields stay in the
+     database and can be switched back on by flipping this to the real check. */
+  const hasOrient   = false;
   const nPhoto      = node ? imageCount(node.code) : 0;
 
   /* pick a sensible default tab */
