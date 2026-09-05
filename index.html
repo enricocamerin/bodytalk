@@ -178,6 +178,14 @@
 
   /* formula: linear chains, indented only for declared sub-formulas */
   .froot{margin-bottom:11px;}
+  .froot.entry{
+    background:linear-gradient(90deg, rgba(61,220,151,.13), rgba(61,220,151,.04));
+    border:1px solid rgba(61,220,151,.28);
+    border-radius:16px;padding:11px 12px 9px;margin-bottom:14px;
+  }
+  .froot.entry .f-label{color:var(--em);}
+  .entry-mark{font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--em);margin-bottom:6px;display:block;}
   .chain{display:flex;flex-wrap:wrap;align-items:center;gap:5px;}
   .chip{display:inline-flex;align-items:center;gap:8px;background:var(--card);
     border:1px solid var(--edge);border-radius:99px;padding:6px 12px;font-size:12.5px;
@@ -800,7 +808,9 @@ function renderTray(){
   const roots=childrenOfNode(null);
   h+='<div class="tray-scroll">';
   roots.forEach(function(r,i){
-    h+='<div class="froot">';
+    const ent = ENTRY[r.code];
+    h+='<div class="froot'+(ent?" entry":"")+'">';
+    if(ent) h+='<span class="entry-mark">'+byCode[r.code].name+' formula</span>';
     if(roots.length>1) h+='<div class="f-label">Formula '+(i+1)+'</div>';
     h+=chainHTML(r);
     h+='</div>';
@@ -946,7 +956,9 @@ function savedTree(rows,pid){
   if(!roots.length) return "";
   let h="";
   roots.forEach(function(r,i){
-    h+='<div class="froot">';
+    const ent = (pid===null) && ENTRY[r.protocol_code];
+    h+='<div class="froot'+(ent?" entry":"")+'">';
+    if(ent) h+='<span class="entry-mark">'+((byCode[r.protocol_code]||{}).name||"")+' formula</span>';
     if(pid===null && roots.length>1) h+='<div class="f-label">Formula '+(i+1)+'</div>';
     h+=savedChain(rows,r);
     h+='</div>';
