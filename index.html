@@ -317,7 +317,7 @@ async function loadRef(){
     LINKS[l.protocol_code]={table:l.dimension_table,code:l.dimension_code};
   });
   document.getElementById("dot").classList.add("on");
-  document.getElementById("brandText").textContent="BodyTalk · "+TREE.length+" nodes";
+  document.getElementById("brandText").textContent="BodyTalk · "+TREE.length+" nodes · auto";
 }
 async function loadSessions(){
   const d=await api("?action=sessions&device="+encodeURIComponent(DEVICE));
