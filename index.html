@@ -519,8 +519,13 @@ function clearAll(){
   NODES=[]; activeId=null; pendingBranch=false; render(); renderTray();
 }
 
-function go(code){ current=code; view="browse"; detailTab=""; syncTabs(); render(); window.scrollTo(0,0); }
-function setDetailTab(t){ detailTab=t; render(); }
+function go(code){
+  current=code; view="browse";
+  /* open the children by default; otherwise nothing is pre-opened */
+  detailTab = kids(code).length ? "specific" : "";
+  syncTabs(); render(); window.scrollTo(0,0);
+}
+function setDetailTab(t){ detailTab = (detailTab===t) ? "" : t; render(); }
 function syncTabs(){
   document.getElementById("tBrowse").classList.toggle("active",view==="browse");
   document.getElementById("tLog").classList.toggle("active",view==="log");
@@ -630,13 +635,17 @@ function render(){
   /* qualifier sets that actually contain something */
   const qsets = QUALS.filter(function(q){ return qualItems(q.code).length>0; });
 
-  if(!detailTab) detailTab = hasKidsHere ? "specific" : "photo";
-  if(detailTab==="photo" && !nPhoto)         detailTab = "specific";
-  if(detailTab==="specific" && !hasKidsHere) detailTab = nPhoto ? "photo" : (qsets.length?("q:"+qsets[0].code):"specific");
+  /* the base tab is the node's own content; qualifier lists are optional
+     panels you open and close, never the default */
+  if(detailTab==="") { /* nothing open — description still shows below */ }
+  else if(detailTab==="specific" && !hasKidsHere) detailTab = nPhoto ? "photo" : "";
+  else if(detailTab==="photo" && !nPhoto)         detailTab = hasKidsHere ? "specific" : "";
+  else if(detailTab.indexOf("q:")===0 &&
+          !qsets.some(function(q){return "q:"+q.code===detailTab;})) detailTab = "";
 
-  const tabCount = (hasKidsHere?1:0)+(nPhoto?1:0)+(node?qsets.length:0);
+  const hasAnyTab = hasKidsHere || nPhoto || (node && qsets.length);
 
-  if(node && tabCount>1){
+  if(node && hasAnyTab){
     h+='<div class="dtabs">';
     if(hasKidsHere) h+='<button class="dtab'+(detailTab==="specific"?" on":"")+'" onclick="setDetailTab(&#39;specific&#39;)">More specific<span class="n">'+ch.length+'</span></button>';
     if(nPhoto)      h+='<button class="dtab'+(detailTab==="photo"?" on":"")+'" onclick="setDetailTab(&#39;photo&#39;)">Photo<span class="n">'+nPhoto+'</span></button>';
