@@ -437,10 +437,11 @@ function kids(code){
   }).sort(natSort);
 }
 
-/* the items of a qualifier list, e.g. Orientation */
+/* the items of a qualifier list = its direct children, whatever its depth */
 function qualItems(setCode){
+  const depth = setCode.split(".").length + 1;
   return TREE.filter(function(n){
-    return n.code.indexOf(setCode+".")===0 && n.code.split(".").length===2;
+    return n.code.indexOf(setCode+".")===0 && n.code.split(".").length===depth;
   }).sort(natSort);
 }
 function ancestors(code){
@@ -663,10 +664,12 @@ function render(){
     h+='<div class="grid">';
     items.forEach(function(it){
       const p=picked(it.code);
-      h+='<div class="card'+(p?" picked":"")+'" onclick="togglePick(&#39;'+it.code+'&#39;)">' +
+      const sub=kids(it.code).length;
+      h+='<div class="card'+(p?" picked":"")+'" onclick="go(&#39;'+it.code+'&#39;)">' +
          '<div class="c-accent" style="background:var(--em)"></div>' +
          '<div class="c-code">'+it.code+'</div><div class="c-name">'+it.name+'</div>' +
-         '<div class="c-foot"><span></span>' +
+         '<div class="c-foot">' +
+         (sub?'<span class="c-count">'+sub+' inside</span>':'<span></span>') +
          '<button class="c-add'+(p?" on":"")+'" onclick="togglePick(&#39;'+it.code+'&#39;,event)">'+(p?"✓":"+")+'</button>' +
          '</div></div>';
     });
