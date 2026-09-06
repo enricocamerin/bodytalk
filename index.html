@@ -366,7 +366,7 @@ function deviceId(){
 }
 const DEVICE=deviceId();
 
-let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={},QUALS=[],KW={},ENTRY={};
+let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={},QUALS=[],KW={},ENTRY={},AC={};
 let current=null, view="browse";
 let detailTab="";   /* 'specific' | 'orientation' | 'photo' */
 let NODES=[];        /* {id,parentId,branch,code,name} */
@@ -434,6 +434,7 @@ async function loadRef(){
   PL={}; (d.planets||[]).forEach(function(r){PL[r.code]=r;});
   OC={}; (d.organs||[]).forEach(function(r){OC[r.code]=r;});
   QUALS = d.quals||[];
+  AC={}; (d.acim||[]).forEach(function(r){AC[r.code]=r;});
   ENTRY={}; (d.entries||[]).forEach(function(r){ ENTRY[r.code]=r; });
   KW={}; (d.keywords||[]).forEach(function(r){
     (KW[r.protocol_code]=KW[r.protocol_code]||[]).push(r);
@@ -627,6 +628,17 @@ function dimFields(code){
     return {dim:lk.code,rows:[
       ["Organ",d.organ],
       ["Description",d.description],
+      ["Sources",d.sources,1]]};
+  }
+  if(lk.table==="dim_acim_lesson"){
+    const d=AC[lk.code]; if(!d) return null;
+    if(!d.summary&&!d.practice) return {dim:lk.code,empty:1};
+    return {dim:lk.code,rows:[
+      ["Lesson",(d.reference||"")+(d.lesson_no?" \u00B7 no. "+d.lesson_no:"")],
+      ["Idea",d.title],
+      ["Summary",d.summary],
+      ["Practice",d.practice],
+      ["Page",d.page_ref],
       ["Sources",d.sources,1]]};
   }
   if(lk.table==="dim_planet"){
