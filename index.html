@@ -796,6 +796,14 @@ function render(){
   const hasAnyTab = !isEntryNode &&
     (hasKidsHere || nPhoto || kwList.length || phys || (node && qsets.length));
 
+  if(node && isEntryNode){
+    h+='<div class="dtabs">';
+    h+='<button class="dtab'+(detailTab!=="inside"?" on":"")+'" onclick="setDetailTab(&#39;&#39;)">'+node.name+'</button>';
+    if(hasKidsHere)
+      h+='<button class="dtab'+(detailTab==="inside"?" on":"")+'" onclick="setDetailTab(&#39;inside&#39;)">Inside '+node.name+'<span class="n">'+ch.length+'</span></button>';
+    h+='</div>';
+  }
+
   if(node && hasAnyTab){
     h+='<div class="dtabs">';
     if(hasKidsHere) h+='<button class="dtab'+(detailTab==="specific"?" on":"")+'" onclick="setDetailTab(&#39;specific&#39;)">More specific<span class="n">'+ch.length+'</span></button>';
@@ -813,7 +821,9 @@ function render(){
        '<b>'+ep.flow+'</b></div>';
   }
 
-  if(isEntryNode){
+  if(isEntryNode && detailTab==="inside"){
+    h+=kidsGridHTML(ch, false);
+  } else if(isEntryNode){
     const items = qualItems(ep.next_set);
     h+='<div class="grid">';
     items.forEach(function(it){
@@ -827,10 +837,6 @@ function render(){
     });
     h+='</div>';
     h+='<div class="note" style="margin-top:18px">Pick what is to be forgiven, then go back and continue into the BodyTalk protocol \u2014 the formula keeps the whole chain.</div>';
-    if(hasKidsHere){
-      h+='<div class="dtabs" style="margin-top:22px"><button class="dtab on">Inside '+node.name+'<span class="n">'+ch.length+'</span></button></div>';
-      h+=kidsGridHTML(ch, false);
-    }
   } else if(detailTab==="phys" && phys){
     h+='<div class="field" style="margin-top:18px"><div class="field-label">Physiology</div>' +
        '<div class="field-body">'+phys.physiology+'</div></div>';
