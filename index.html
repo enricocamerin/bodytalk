@@ -377,6 +377,7 @@ let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={},QUALS=[],KW={},ENTRY={},
 let current=null, view="browse";
 let detailTab="";   /* 'specific' | 'orientation' | 'photo' */
 let NODES=[];        /* {id,parentId,branch,code,name} */
+const BUILD="b260906.0741";   /* shown in the header so the loaded version is never in doubt */
 let activeId=null;   /* where the next pick attaches */
 let pendingBranch=false;   /* next pick opens a declared sub-formula */
 let segment="protocol";    /* 'acim' while the forgiveness part is open */
@@ -942,8 +943,8 @@ function renderTray(){
     (segment==="acim" ? '<button class="mini" onclick="closeAcim()">Close ACIM</button>' : '') +
     '<button class="mini'+(parcelMode?" go":"")+'" onclick="startParceling()" '+(parcelMode?"disabled":"")+'>Parceling</button>' +
     (parcelMode ? '<button class="mini go" onclick="closeParceling()">Close parceling</button>' : '') +
-    '<button class="mini'+(pendingBranch?" go":"")+'" onclick="startSub()" '+(!activeId?"disabled":"")+'>Sub-formula</button>' +
-    '<button class="mini" onclick="closeSub()" '+(!insideSub()?"disabled":"")+'>Close sub</button>' +
+    '<button class="mini'+((pendingBranch||insideSub())?" go":"")+'" onclick="startSub()" '+(!activeId?"disabled":"")+'>Sub-formula</button>' +
+    '<button class="mini'+(insideSub()?" go":"")+'" onclick="closeSub()" '+(!insideSub()?"disabled":"")+'>Close sub</button>' +
     '<button class="mini" onclick="newFormula()" '+(!n?"disabled":"")+'>Parallel</button>' +
     '<button class="mini" onclick="clearAll()" '+(!n?"disabled":"")+'>Clear</button>' +
     '<button class="mini go" onclick="openSave()" '+(!n?"disabled":"")+'>Save</button></div></div>';
