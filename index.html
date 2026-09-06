@@ -649,6 +649,10 @@ function dimFieldsOne(lk){
       ["Summary",d.summary],
       ["Practice",d.practice],
       ["Page",d.page_ref],
+      ["Full text", d.link_url
+        ? '<a href="'+d.link_url+'" target="_blank" rel="noopener noreferrer">'+
+          'Read the lesson on acim.org \u2197</a>'
+        : ""],
       ["Sources",d.sources,1]]};
   }
   if(lk.table==="dim_planet"){
