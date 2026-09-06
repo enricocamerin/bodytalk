@@ -812,7 +812,7 @@ function render(){
 
   if(node && hasAnyTab){
     h+='<div class="dtabs">';
-    if(hasKidsHere) h+='<button class="dtab'+(detailTab==="specific"?" on":"")+'" onclick="setDetailTab(&#39;specific&#39;)">More specific<span class="n">'+insideCh.length+'</span></button>';
+    if(hasKidsHere) h+='<button class="dtab'+(detailTab==="specific"?" on":"")+'" onclick="setDetailTab(&#39;specific&#39;)">'+((node&&node.child_tab_label)||"More specific")+'<span class="n">'+insideCh.length+'</span></button>';
     if(nPhoto)      h+='<button class="dtab'+(detailTab==="photo"?" on":"")+'" onclick="setDetailTab(&#39;photo&#39;)">Photo<span class="n">'+nPhoto+'</span></button>';
     if(phys)          h+='<button class="dtab'+(detailTab==="phys"?" on":"")+'" onclick="setDetailTab(&#39;phys&#39;)">Physiology</button>';
     if(kwList.length) h+='<button class="dtab'+(detailTab==="keyword"?" on":"")+'" onclick="setDetailTab(&#39;keyword&#39;)">Keyword<span class="n">'+kwList.length+'</span></button>';
