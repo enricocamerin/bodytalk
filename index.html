@@ -114,6 +114,10 @@
   .c-add.on{background:var(--em);border-color:var(--em);color:var(--void);font-weight:600;}
 
   /* ---------- detail ---------- */
+  .dtab .step{display:inline-flex;align-items:center;justify-content:center;
+    width:17px;height:17px;margin-right:7px;border-radius:50%;
+    font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:1;
+    background:var(--em);color:#04120c;font-weight:600;}
   .tag{display:inline-flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;
     font-size:10.5px;background:rgba(61,220,151,.1);border:1px solid rgba(61,220,151,.28);
     border-radius:99px;padding:7px 13px;margin-top:20px;color:var(--em);letter-spacing:.09em;}
@@ -804,9 +808,12 @@ function render(){
 
   if(node && isEntryNode){
     h+='<div class="dtabs">';
-    h+='<button class="dtab'+(detailTab!=="inside"?" on":"")+'" onclick="setDetailTab(&#39;&#39;)">'+node.name+'</button>';
+    h+='<button class="dtab'+(detailTab!=="inside"?" on":"")+'" onclick="setDetailTab(&#39;&#39;)">' +
+       '<span class="step">1</span>'+(ep.tab_label||node.name)+'</button>';
     if(hasKidsHere)
-      h+='<button class="dtab'+(detailTab==="inside"?" on":"")+'" onclick="setDetailTab(&#39;inside&#39;)">Inside '+node.name+'<span class="n">'+insideCh.length+'</span></button>';
+      h+='<button class="dtab'+(detailTab==="inside"?" on":"")+'" onclick="setDetailTab(&#39;inside&#39;)">' +
+         '<span class="step">2</span>'+((node.child_tab_label)||"More specific")+
+         '<span class="n">'+insideCh.length+'</span></button>';
     h+='</div>';
   }
 
