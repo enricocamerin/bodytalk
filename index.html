@@ -498,7 +498,8 @@ function ancestors(code){
   return p.map(function(_,i){return byCode[p.slice(0,i+1).join(".")];}).filter(Boolean);
 }
 
-function picked(c){ return NODES.some(function(n){return n.kind==="step"&&n.code===c;}); }
+/* nodes only get a kind at save time, so match on the code alone */
+function picked(c){ return NODES.some(function(n){ return n.code===c; }); }
 
 function togglePick(code,ev){
   if(ev){ ev.stopPropagation(); }
