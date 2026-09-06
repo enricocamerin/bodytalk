@@ -501,10 +501,10 @@ function ancestors(code){
 /* nodes only get a kind at save time, so match on the code alone */
 function picked(c){ return NODES.some(function(n){ return n.code===c; }); }
 
-function togglePick(code,ev){
+/* a pick always adds: the same step may appear more than once in a formula.
+   removing is done with the x on the chip */
+function addPick(code,ev){
   if(ev){ ev.stopPropagation(); }
-  const ex=NODES.find(function(n){return n.code===code;});
-  if(ex){ removeNode(ex.id); return; }
   if(!NODES.length){
     segment = (ENTRY[code] || isFromEntrySet(code)) ? "acim" : "protocol";
   }
@@ -773,7 +773,7 @@ function kidsGridHTML(ch, wide){
       h+='<div class="c-code">'+k.code+'</div><div class="c-name">'+k.name+'</div>' +
          '<div class="c-foot">' +
          (n?'<span class="c-count">'+n+' inside</span>':(lk?'<span class="c-leaf">description</span>':'<span></span>')) +
-         '<button class="c-add'+(p?" on":"")+'" onclick="togglePick(&#39;'+k.code+'&#39;,event)">'+(p?"✓":"+")+'</button>' +
+         '<button class="c-add" onclick="addPick(&#39;'+k.code+'&#39;,event)">+</button>' +
          '</div>';
     }
     h+='</div>';
@@ -870,13 +870,13 @@ function render(){
     items.forEach(function(it){
       const p=picked(it.code);
       const sub=kids(it.code).length;
-      const act = sub ? 'go(&#39;'+it.code+'&#39;)' : 'togglePick(&#39;'+it.code+'&#39;)';
+      const act = sub ? 'go(&#39;'+it.code+'&#39;)' : 'addPick(&#39;'+it.code+'&#39;)';
       h+='<div class="card'+(p?" picked":"")+'" onclick="'+act+'">' +
          '<div class="c-accent" style="background:var(--em)"></div>' +
          '<div class="c-name">'+it.name+'</div>' +
          '<div class="c-foot">' +
          (sub?'<span class="c-count">'+sub+' inside</span>':'<span></span>') +
-         '<button class="c-add'+(p?" on":"")+'" onclick="togglePick(&#39;'+it.code+'&#39;,event)">'+(p?"✓":"+")+'</button>' +
+         '<button class="c-add" onclick="addPick(&#39;'+it.code+'&#39;,event)">+</button>' +
          '</div></div>';
     });
     h+='</div>';
@@ -905,7 +905,7 @@ function render(){
          '<div class="c-code">'+it.code+'</div><div class="c-name">'+it.name+'</div>' +
          '<div class="c-foot">' +
          (sub?'<span class="c-count">'+sub+' inside</span>':'<span></span>') +
-         '<button class="c-add'+(p?" on":"")+'" onclick="togglePick(&#39;'+it.code+'&#39;,event)">'+(p?"✓":"+")+'</button>' +
+         '<button class="c-add" onclick="addPick(&#39;'+it.code+'&#39;,event)">+</button>' +
          '</div></div>';
     });
     h+='</div>';
@@ -1310,7 +1310,7 @@ function command(raw){
   }
   if(/\b(protocollo|inizio|home)\b/.test(t)){ go(null); say("Protocollo"); return; }
   if(/\b(sessioni|registro)\b/.test(t)){ setView("log"); say("Sessioni"); return; }
-  if(/\b(aggiungi|prendi)\b/.test(t)){ if(current){ togglePick(current); say("Aggiunto"); } return; }
+  if(/\b(aggiungi|prendi)\b/.test(t)){ if(current){ addPick(current); say("Aggiunto"); } return; }
   if(/\b(parallela|nuova formula)\b/.test(t)){ newFormula(); say("Nuova formula"); return; }
   if(/\b(sottoformula|sotto formula|ramo)\b/.test(t)){ startSub(); say("Sottoformula"); return; }
   if(/\b(chiudi)\b/.test(t)){ closeSub(); say("Tornato al ramo principale"); return; }
