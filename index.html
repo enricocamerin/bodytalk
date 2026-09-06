@@ -378,6 +378,7 @@ let activeId=null;   /* where the next pick attaches */
 let pendingBranch=false;   /* next pick opens a declared sub-formula */
 let segment="protocol";    /* 'acim' while the forgiveness part is open */
 let selectMode=false, selected={}, groupSeq=0;
+let parcelMode=false, parcelId=null;   /* live parcel: new picks land in one box */
 let collapsed={};          /* node id -> true when its sub-formula is folded */
 let sessions=[];
 let nid=0;
@@ -504,8 +505,10 @@ function togglePick(code,ev){
     segment = (ENTRY[code] || isFromEntrySet(code)) ? "acim" : "protocol";
   }
   const id=newId();
-  NODES.push({ id:id, parentId:activeId, branch:pendingBranch, segment:segment,
-               code:code, name:byCode[code].name });
+  const nd={ id:id, parentId:activeId, branch:pendingBranch, segment:segment,
+             code:code, name:byCode[code].name };
+  if(parcelMode) nd.group=parcelId;
+  NODES.push(nd);
   pendingBranch=false;
   activeId=id;                       /* the chain continues from here */
   render(); renderTray();
@@ -521,6 +524,15 @@ function isFromEntrySet(code){
 }
 
 function closeAcim(){ segment="protocol"; renderTray(); }
+
+function startParceling(){
+  parcelMode=true; parcelId=++groupSeq;
+  renderTray();
+}
+function closeParceling(){
+  parcelMode=false; parcelId=null;
+  renderTray();                 /* activeId is untouched: the chain continues */
+}
 
 function toggleSelectMode(){
   selectMode=!selectMode;
@@ -601,7 +613,7 @@ function total(){ return NODES.length; }
 function clearAll(){
   if(!confirm("Clear the current session? Nothing is saved yet.")) return;
   NODES=[]; activeId=null; pendingBranch=false; segment="protocol";
-  selectMode=false; selected={}; groupSeq=0; render(); renderTray();
+  selectMode=false; selected={}; groupSeq=0; parcelMode=false; parcelId=null; render(); renderTray();
 }
 
 function go(code){
@@ -923,8 +935,8 @@ function renderTray(){
 
   let h='<div class="tray-head"><div class="tray-title">'+n+' selected</div><div class="tray-btns">' +
     (segment==="acim" ? '<button class="mini" onclick="closeAcim()">Close ACIM</button>' : '') +
-    '<button class="mini'+(selectMode?" go":"")+'" onclick="toggleSelectMode()" '+(!n?"disabled":"")+'>'+(selectMode?"Cancel":"Select")+'</button>' +
-    (selectMode&&selectedCount()>1 ? '<button class="mini go" onclick="groupSelected()">Group '+selectedCount()+'</button>' : '') +
+    '<button class="mini'+(parcelMode?" go":"")+'" onclick="startParceling()" '+(parcelMode?"disabled":"")+'>Parceling</button>' +
+    (parcelMode ? '<button class="mini go" onclick="closeParceling()">Close parceling</button>' : '') +
     '<button class="mini" onclick="startSub()" '+(!activeId?"disabled":"")+'>Sub-formula</button>' +
     '<button class="mini" onclick="closeSub()" '+(!insideSub()?"disabled":"")+'>Close sub</button>' +
     '<button class="mini" onclick="newFormula()" '+(!n?"disabled":"")+'>Parallel</button>' +
@@ -1096,7 +1108,7 @@ async function doSave(){
     await api("?action=save",{method:"POST",headers:{"content-type":"application/json"},
       body:JSON.stringify({device_id:DEVICE,title:title||null,notes:notes||null,session_date:date,steps:steps})});
     closeSave(); NODES=[]; activeId=null; pendingBranch=false; segment="protocol";
-    selectMode=false; selected={}; groupSeq=0; renderTray();
+    selectMode=false; selected={}; groupSeq=0; parcelMode=false; parcelId=null; renderTray();
     await loadSessions(); setView("log");
   }catch(e){ b.textContent="Save"; b.disabled=false; alert("Could not save: "+e.message); }
 }
