@@ -529,7 +529,15 @@ function startParceling(){
   parcelMode=true; parcelId=++groupSeq;
   renderTray();
 }
+function toggleParcel(id,ev){
+  if(ev) ev.stopPropagation();
+  const nd=nodeById(id); if(!nd) return;
+  if(nd.group===parcelId) delete nd.group; else nd.group=parcelId;
+  renderTray();
+}
 function closeParceling(){
+  const inBox=NODES.filter(function(n){return n.group===parcelId;});
+  if(inBox.length<2) inBox.forEach(function(n){ delete n.group; });
   parcelMode=false; parcelId=null;
   renderTray();                 /* activeId is untouched: the chain continues */
 }
@@ -943,8 +951,8 @@ function renderTray(){
     t.innerHTML=h; return;
   }
 
-  if(selectMode){
-    h+='<div class="hint">Tap chips to select, then press Group to box them together</div>';
+  if(parcelMode){
+    h+='<div class="hint">Tap chips to put them in the parcel, or add new ones \u00B7 then Close parceling</div>';
   } else
   h+='<div class="hint">' +
      (pendingBranch ? "Next pick opens a sub-formula under \u201C"+short(cur?cur.name:"")+"\u201D"
@@ -1062,12 +1070,13 @@ function alignSubs(scope){
 function chipHTML(nd){
   const here=nd.id===activeId;
   const sel=!!selected[nd.id];
-  const act = selectMode ? 'toggleSelect(&#39;'+nd.id+'&#39;)'
+  const inParcel = parcelMode && nd.group===parcelId;
+  const act = parcelMode ? 'toggleParcel(&#39;'+nd.id+'&#39;,event)'
                          : 'setActive(&#39;'+nd.id+'&#39;,event)';
-  return '<span class="chip'+(here?" here":"")+(sel?" sel":"")+'" data-chip="'+nd.id+'" ' +
+  return '<span class="chip'+(here?" here":"")+((sel||inParcel)?" sel":"")+'" data-chip="'+nd.id+'" ' +
     'onclick="'+act+'">' +
     '<span class="cc">'+nd.code+'</span>'+short(nd.name)+
-    (selectMode?'':'<span class="x" onclick="removeNode(&#39;'+nd.id+'&#39;)">\u00D7</span>')+
+    (parcelMode?'':'<span class="x" onclick="removeNode(&#39;'+nd.id+'&#39;)">\u00D7</span>')+
     '</span>';
 }
 
