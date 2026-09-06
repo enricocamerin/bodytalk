@@ -721,6 +721,30 @@ function imageCount(code){
   return n;
 }
 
+function kidsGridHTML(ch, wide){
+  let h='<div class="grid'+(wide?" wide":"")+'">';
+  ch.forEach(function(k){
+    const n=kids(k.code).length, lk=linksOf(k.code).length>0, p=picked(k.code);
+    const isEntry = !!ENTRY[k.code];
+    h+='<div class="card'+(wide?" wide":"")+(p?" picked":"")+'" onclick="go(&#39;'+k.code+'&#39;)">' +
+       '<div class="c-accent" style="background:'+(isEntry?"var(--em)":hueOf(k.code))+';'+
+       (isEntry?"width:5px;":"")+'"></div>';
+    if(wide){
+      h+='<div style="flex:1"><div class="c-code">'+k.code+'</div>' +
+         '<div class="c-name">'+k.name+'</div></div>' +
+         '<div class="c-count">'+(n?n:"")+'</div>';
+    } else {
+      h+='<div class="c-code">'+k.code+'</div><div class="c-name">'+k.name+'</div>' +
+         '<div class="c-foot">' +
+         (n?'<span class="c-count">'+n+' inside</span>':(lk?'<span class="c-leaf">description</span>':'<span></span>')) +
+         '<button class="c-add'+(p?" on":"")+'" onclick="togglePick(&#39;'+k.code+'&#39;,event)">'+(p?"✓":"+")+'</button>' +
+         '</div>';
+    }
+    h+='</div>';
+  });
+  return h+'</div>';
+}
+
 /* ---------- render ---------- */
 function render(){
   const m=document.getElementById("main");
@@ -803,6 +827,10 @@ function render(){
     });
     h+='</div>';
     h+='<div class="note" style="margin-top:18px">Pick what is to be forgiven, then go back and continue into the BodyTalk protocol \u2014 the formula keeps the whole chain.</div>';
+    if(hasKidsHere){
+      h+='<div class="dtabs" style="margin-top:22px"><button class="dtab on">Inside '+node.name+'<span class="n">'+ch.length+'</span></button></div>';
+      h+=kidsGridHTML(ch, false);
+    }
   } else if(detailTab==="phys" && phys){
     h+='<div class="field" style="margin-top:18px"><div class="field-label">Physiology</div>' +
        '<div class="field-body">'+phys.physiology+'</div></div>';
@@ -834,28 +862,7 @@ function render(){
   } else if(detailTab==="photo" && nPhoto){
     h+=imagesHTML(node.code);
   } else if(hasKidsHere){
-    const wide = !current;
-    h+='<div class="grid'+(wide?" wide":"")+'">';
-    ch.forEach(function(k){
-      const n=kids(k.code).length, lk=linksOf(k.code).length>0, p=picked(k.code);
-      const isEntry = !!ENTRY[k.code];
-      h+='<div class="card'+(wide?" wide":"")+(p?" picked":"")+'" onclick="go(&#39;'+k.code+'&#39;)">' +
-         '<div class="c-accent" style="background:'+(isEntry?"var(--em)":hueOf(k.code))+';'+
-         (isEntry?"width:5px;":"")+'"></div>';
-      if(wide){
-        h+='<div style="flex:1"><div class="c-code">'+k.code+'</div>' +
-           '<div class="c-name">'+k.name+'</div></div>' +
-           '<div class="c-count">'+(n?n:"")+'</div>';
-      } else {
-        h+='<div class="c-code">'+k.code+'</div><div class="c-name">'+k.name+'</div>' +
-           '<div class="c-foot">' +
-           (n?'<span class="c-count">'+n+' inside</span>':(lk?'<span class="c-leaf">description</span>':'<span></span>')) +
-           '<button class="c-add'+(p?" on":"")+'" onclick="togglePick(&#39;'+k.code+'&#39;,event)">'+(p?"✓":"+")+'</button>' +
-           '</div>';
-      }
-      h+='</div>';
-    });
-    h+='</div>';
+    h+=kidsGridHTML(ch, !current);
   }
 
   if(hasDesc){
