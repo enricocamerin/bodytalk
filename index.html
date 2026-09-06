@@ -1007,7 +1007,7 @@ function chainHTML(node){
     blocks.forEach(function(b,bi){
       if(bi) h+='<span class="link">\u2014</span>';
       if(b.g){
-        h+='<span class="grp"><span class="grp-label" onclick="ungroup('+b.g+')">Group \u00B7 '+b.nodes.length+' \u00B7 tap to undo</span><span class="chain">';
+        h+='<span class="grp"><span class="grp-label" onclick="ungroup('+b.g+')">Parcel \u00B7 '+b.nodes.length+' \u00B7 tap to undo</span><span class="chain">';
         b.nodes.forEach(function(n,j){
           if(j) h+='<span class="link">\u2014</span>';
           h+=chipHTML(n);
