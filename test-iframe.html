@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test iframe — ACIM Lezione 65</title>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0; padding: 16px; line-height: 1.5;
+  }
+  h1 { font-size: 1.1rem; margin: 0 0 12px; }
+  .url { font-size: .8rem; opacity: .7; word-break: break-all; margin-bottom: 12px; }
+  #status {
+    padding: 10px 14px; border-radius: 8px; font-weight: 600;
+    margin-bottom: 14px; font-size: .9rem;
+  }
+  .wait { background: #fff4d6; color: #7a5900; }
+  .ok   { background: #d9f5e1; color: #14532d; }
+  .ko   { background: #fde0e0; color: #7f1d1d; }
+  .frame-box {
+    position: relative; width: 100%; height: 65vh;
+    border: 1px solid rgba(128,128,128,.35);
+    border-radius: 12px; overflow: hidden;
+  }
+  .frame-box iframe { width: 100%; height: 100%; border: 0; display: block; }
+  p.note { font-size: .8rem; opacity: .75; margin-top: 14px; }
+</style>
+</head>
+<body>
+
+<h1>Test incorporamento iframe</h1>
+<div class="url" id="target"></div>
+<div id="status" class="wait">Caricamento in corso…</div>
+
+<div class="frame-box">
+  <iframe
+    id="acimFrame"
+    src="https://lezioni.acim.org/it/chapters/lesson-65"
+    title="ACIM Lezione 65"
+    referrerpolicy="no-referrer-when-downgrade"></iframe>
+</div>
+
+<p class="note">
+  Se il riquadro resta bianco e lo stato diventa rosso, il sito blocca
+  l'incorporamento tramite <code>X-Frame-Options</code> o
+  <code>Content-Security-Policy: frame-ancestors</code>. In quel caso l'unica
+  strada è aprire il link in una nuova scheda o in un in-app browser.
+  Controlla anche la Console del browser (F12): un errore esplicito
+  "Refused to display … in a frame" conferma il blocco.
+</p>
+
+<script>
+  var URL_TARGET = document.getElementById('acimFrame').src;
+  document.getElementById('target').textContent = URL_TARGET;
+
+  var frame  = document.getElementById('acimFrame');
+  var status = document.getElementById('status');
+  var loaded = false;
+
+  frame.addEventListener('load', function () {
+    loaded = true;
+    status.className = 'ok';
+    status.textContent = '✓ L\u2019iframe ha caricato qualcosa. Verifica visivamente che il contenuto sia visibile qui sotto.';
+  });
+
+  setTimeout(function () {
+    if (!loaded) {
+      status.className = 'ko';
+      status.textContent = '\u2715 Nessun caricamento entro 6 secondi: molto probabilmente l\u2019incorporamento \u00e8 bloccato.';
+    }
+  }, 6000);
+</script>
+
+</body>
+</html>
