@@ -567,13 +567,16 @@ function ungroup(g){
   renderTray();
 }
 
+/* take one step out of the chain; whatever hung below it moves up a place */
 function removeNode(id){
-  const kill=[id];
-  for(let i=0;i<kill.length;i++)
-    childrenOfNode(kill[i]).forEach(function(c){ kill.push(c.id); });
-  NODES=NODES.filter(function(n){ return kill.indexOf(n.id)<0; });
-  if(kill.indexOf(activeId)>=0)
-    activeId = NODES.length ? NODES[NODES.length-1].id : null;
+  const nd=nodeById(id); if(!nd) return;
+  childrenOfNode(id).forEach(function(c){
+    c.parentId = nd.parentId;
+    if(nd.branch && !c.branch) c.branch = true;   /* a sub-formula stays a sub-formula */
+  });
+  NODES=NODES.filter(function(n){ return n.id!==id; });
+  if(activeId===id)
+    activeId = nd.parentId || (NODES.length ? NODES[NODES.length-1].id : null);
   render(); renderTray();
 }
 
