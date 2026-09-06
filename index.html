@@ -214,7 +214,10 @@
   .chip .cc{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--em);}
   .chip .x{color:var(--text-3);cursor:pointer;font-size:14px;line-height:1;}
   .link{color:var(--em);font-size:11px;}
-  .sub{position:relative;margin:5px 0 5px 0;padding-left:16px;}
+  .sub{position:relative;margin:8px 0 5px 14px;padding-left:12px;
+    border-left:2px solid var(--line,rgba(255,255,255,.12));}
+  .sub-from{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.04em;
+    color:var(--text-3);margin-bottom:5px;}
   .sub-row{display:flex;align-items:flex-start;gap:7px;}
   .toggle{flex-shrink:0;width:20px;height:20px;margin-top:6px;border-radius:6px;
     border:1px solid var(--edge-2);background:var(--card);color:var(--em);
@@ -557,10 +560,21 @@ function ungroup(g){
 /* take one step out of the chain; whatever hung below it moves up a place */
 function removeNode(id){
   const nd=nodeById(id); if(!nd) return;
-  childrenOfNode(id).forEach(function(c){
-    c.parentId = nd.parentId;
-    if(nd.branch && !c.branch) c.branch = true;   /* a sub-formula stays a sub-formula */
-  });
+  const ch=childrenOfNode(id);
+  if(nd.parentId===null){
+    /* the head of a formula: one child takes its place, the others hang off it,
+       so a removal never splits one formula into two */
+    const head = ch.find(function(c){ return !c.branch; }) || ch[0];
+    ch.forEach(function(c){
+      if(c===head){ c.parentId=null; c.branch=false; }
+      else       { c.parentId=head.id; }
+    });
+  } else {
+    ch.forEach(function(c){
+      c.parentId = nd.parentId;
+      if(nd.branch && !c.branch) c.branch = true;   /* a sub-formula stays a sub-formula */
+    });
+  }
   NODES=NODES.filter(function(n){ return n.id!==id; });
   if(activeId===id)
     activeId = nd.parentId || (NODES.length ? NODES[NODES.length-1].id : null);
@@ -588,7 +602,8 @@ function closeSub(){
   if(!n) return;
   /* walk up to the node that opened this sub-formula, then step to its parent */
   while(n && !n.branch) n = n.parentId ? nodeById(n.parentId) : null;
-  activeId = n && n.parentId ? n.parentId : null;
+  if(!n) return;                       /* not inside a sub: nothing to close */
+  activeId = n.parentId || n.id;       /* only Parallel starts a new formula */
   pendingBranch=false;
   renderTray();
 }
@@ -1018,7 +1033,10 @@ function chainHTML(node){
 
   subs.forEach(function(s){
     const folded = !!collapsed[s.node.id];
-    h+='<div class="sub" data-from="'+s.from+'"><div class="sub-row">' +
+    const host=nodeById(s.from);
+    h+='<div class="sub" data-from="'+s.from+'">' +
+       '<div class="sub-from">\u21B3 under '+short(host?host.name:"")+'</div>' +
+       '<div class="sub-row">' +
        '<button class="toggle" onclick="toggleCollapse(&#39;'+s.node.id+'&#39;,event)">' +
        (folded?"+":"\u2212")+'</button><div style="flex:1">';
     if(folded){
@@ -1044,18 +1062,9 @@ function countChain(node){
 }
 
 /* place each declared sub-formula directly under the chip it branches from */
-function alignSubs(scope){
-  const root=scope||document;
-  root.querySelectorAll(".sub[data-from]").forEach(function(el){
-    const from=el.getAttribute("data-from");
-    const chip=root.querySelector('.chip[data-chip="'+from+'"]');
-    if(!chip) return;
-    const box=el.offsetParent||el.parentElement;
-    if(!box) return;
-    const left=chip.offsetLeft;
-    el.style.marginLeft=Math.max(0,left)+"px";
-  });
-}
+/* sub-formulas sit at a fixed indent and name the step they hang from,
+   which survives chip wrapping on a narrow screen */
+function alignSubs(){}
 
 function chipHTML(nd){
   const here=nd.id===activeId;
