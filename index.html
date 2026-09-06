@@ -444,7 +444,8 @@ async function loadRef(){
     (IMG[k]=IMG[k]||[]).push(r);
   });
   LINKS={}; (d.links||[]).forEach(function(l){
-    LINKS[l.protocol_code]={table:l.dimension_table,code:l.dimension_code};
+    (LINKS[l.protocol_code]=LINKS[l.protocol_code]||[])
+      .push({table:l.dimension_table,code:l.dimension_code});
   });
   document.getElementById("dot").classList.add("on");
   document.getElementById("brandText").textContent="BodyTalk · "+TREE.length+" nodes";
@@ -616,8 +617,17 @@ function setView(v){
 }
 
 /* ---------- dimension rendering ---------- */
+function linksOf(code){ return LINKS[code]||[]; }
+function lk1(code){ const a=linksOf(code); return a.length?a[0]:null; }
+function lkOfTable(code,table){
+  const a=linksOf(code);
+  for(let i=0;i<a.length;i++) if(a[i].table===table) return a[i];
+  return null;
+}
 function dimFields(code){
-  const lk=LINKS[code];
+  return linksOf(code).map(dimFieldsOne).filter(Boolean);
+}
+function dimFieldsOne(lk){
   if(!lk) return null;
   if(lk.table==="dim_nervous_system"){
     const d=NS[lk.code]; if(!d) return null;
@@ -654,9 +664,12 @@ function dimFields(code){
   return null;
 }
 function imagesHTML(code){
-  const lk=LINKS[code]; if(!lk) return "";
-  const list=IMG[lk.table+"|"+lk.code];
-  if(!list||!list.length) return "";
+  let list=[];
+  linksOf(code).forEach(function(lk){
+    const l=IMG[lk.table+"|"+lk.code];
+    if(l&&l.length) list=list.concat(l);
+  });
+  if(!list.length) return "";
   let h='<div class="figs">';
   list.forEach(function(im){
     h+='<div class="fig"><div class="imgwrap">' +
@@ -672,31 +685,40 @@ function imagesHTML(code){
 }
 
 function dimHTML(code){
-  const f=dimFields(code);
-  if(!f) return '<div class="note">No dimension linked to this node yet.</div>';
-  if(f.empty) return '<div class="tag">'+code+' → '+f.dim+' · awaiting content</div>' +
-    '<div class="note">Linked to the dimension, but the content has not been entered yet. ' +
-    'Nothing is shown rather than anything invented.</div>';
-  let h='<div class="tag">'+code+' → '+f.dim+' · verified</div>';
-  f.rows.forEach(function(r){
-    if(!r[1]) return;
-    h+='<div class="field"><div class="field-label">'+r[0]+'</div>' +
-       '<div class="field-body'+(r[2]?" src":"")+'">'+r[1]+'</div></div>';
+  const list=dimFields(code);
+  if(!list.length) return '<div class="note">No dimension linked to this node yet.</div>';
+  let h="";
+  list.forEach(function(f){
+    if(f.empty){
+      h+='<div class="tag">'+code+' → '+f.dim+' · awaiting content</div>' +
+         '<div class="note">Linked to the dimension, but the content has not been entered yet. ' +
+         'Nothing is shown rather than anything invented.</div>';
+      return;
+    }
+    h+='<div class="tag">'+code+' → '+f.dim+' · verified</div>';
+    f.rows.forEach(function(r){
+      if(!r[1]) return;
+      h+='<div class="field"><div class="field-label">'+r[0]+'</div>' +
+         '<div class="field-body'+(r[2]?" src":"")+'">'+r[1]+'</div></div>';
+    });
   });
   return h;
 }
 
 function physOf(code){
-  const lk=LINKS[code];
-  if(!lk||lk.table!=="dim_organ_component") return null;
+  const lk=lkOfTable(code,"dim_organ_component");
+  if(!lk) return null;
   const d=OC[lk.code];
   return (d&&d.physiology) ? d : null;
 }
 
 function imageCount(code){
-  const lk=LINKS[code]; if(!lk) return 0;
-  const l=IMG[lk.table+"|"+lk.code];
-  return l?l.length:0;
+  let n=0;
+  linksOf(code).forEach(function(lk){
+    const l=IMG[lk.table+"|"+lk.code];
+    if(l) n+=l.length;
+  });
+  return n;
 }
 
 /* ---------- render ---------- */
@@ -726,7 +748,7 @@ function render(){
   h+='<h1>'+(node?node.name:"BodyTalk Protocol")+'</h1>';
 
   const hasKidsHere = ch.length>0;
-  const hasDesc     = node && !!LINKS[node.code] && !!dimFields(node.code);
+  const hasDesc     = node && dimFields(node.code).length>0;
   const nPhoto      = node ? imageCount(node.code) : 0;
   const kwList      = node ? (KW[node.code]||[]) : [];
   const phys        = node ? physOf(node.code) : null;
@@ -815,7 +837,7 @@ function render(){
     const wide = !current;
     h+='<div class="grid'+(wide?" wide":"")+'">';
     ch.forEach(function(k){
-      const n=kids(k.code).length, lk=!!LINKS[k.code], p=picked(k.code);
+      const n=kids(k.code).length, lk=linksOf(k.code).length>0, p=picked(k.code);
       const isEntry = !!ENTRY[k.code];
       h+='<div class="card'+(wide?" wide":"")+(p?" picked":"")+'" onclick="go(&#39;'+k.code+'&#39;)">' +
          '<div class="c-accent" style="background:'+(isEntry?"var(--em)":hueOf(k.code))+';'+
@@ -1303,12 +1325,13 @@ function detail(code){
   go(code);
   if(ch.length) say(n.name+". Contiene: "+ch.map(function(k){return k.name;}).join(", "));
   else{
-    const lk=LINKS[code];
-    if(lk&&lk.table==="dim_nervous_system"&&NS[lk.code]) say(n.name+". "+NS[lk.code].function);
-    else if(lk&&lk.table==="dim_organ_component"&&OC[lk.code])
-      say(n.name+". "+OC[lk.code].description);
-    else if(lk&&lk.table==="dim_planet"&&PL[lk.code]&&PL[lk.code].body_parts_ruled)
-      say(n.name+". Parti del corpo: "+PL[lk.code].body_parts_ruled);
+    const ns=lkOfTable(code,"dim_nervous_system"),
+          oc=lkOfTable(code,"dim_organ_component"),
+          pl=lkOfTable(code,"dim_planet");
+    if(ns&&NS[ns.code]) say(n.name+". "+NS[ns.code].function);
+    else if(oc&&OC[oc.code]) say(n.name+". "+OC[oc.code].description);
+    else if(pl&&PL[pl.code]&&PL[pl.code].body_parts_ruled)
+      say(n.name+". Parti del corpo: "+PL[pl.code].body_parts_ruled);
     else say(n.name);
   }
 }
