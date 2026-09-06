@@ -644,15 +644,16 @@ function dimFieldsOne(lk){
     const d=AC[lk.code]; if(!d) return null;
     if(!d.summary&&!d.practice) return {dim:lk.code,empty:1};
     return {dim:lk.code,rows:[
-      ["Lesson",(d.reference||"")+(d.lesson_no?" \u00B7 no. "+d.lesson_no:"")],
+      ["Lesson", (function(){
+        const label=(d.reference||"")+(d.lesson_no?" \u00B7 no. "+d.lesson_no:"");
+        return d.link_url
+          ? '<a href="'+d.link_url+'" target="_blank" rel="noopener noreferrer">'+label+' \u2197</a>'
+          : label;
+      })()],
       ["Idea",d.title],
       ["Summary",d.summary],
       ["Practice",d.practice],
       ["Page",d.page_ref],
-      ["Full text", d.link_url
-        ? '<a href="'+d.link_url+'" target="_blank" rel="noopener noreferrer">'+
-          'Read the lesson on acim.org \u2197</a>'
-        : ""],
       ["Sources",d.sources,1]]};
   }
   if(lk.table==="dim_planet"){
@@ -699,7 +700,6 @@ function dimHTML(code){
          'Nothing is shown rather than anything invented.</div>';
       return;
     }
-    h+='<div class="tag">'+code+' → '+f.dim+' · verified</div>';
     f.rows.forEach(function(r){
       if(!r[1]) return;
       h+='<div class="field"><div class="field-label">'+r[0]+'</div>' +
