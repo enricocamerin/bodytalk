@@ -771,7 +771,9 @@ function render(){
   h+='<div class="eyebrow">'+(node?node.code:"Protocol")+'</div>';
   h+='<h1>'+(node?node.name:"BodyTalk Protocol")+'</h1>';
 
-  const hasKidsHere = ch.length>0;
+  const epSet       = (node && ENTRY[node.code]) ? ENTRY[node.code].next_set : null;
+  const insideCh    = epSet ? ch.filter(function(k){return k.code!==epSet;}) : ch;
+  const hasKidsHere = insideCh.length>0;
   const hasDesc     = node && dimFields(node.code).length>0;
   const nPhoto      = node ? imageCount(node.code) : 0;
   const kwList      = node ? (KW[node.code]||[]) : [];
@@ -800,13 +802,13 @@ function render(){
     h+='<div class="dtabs">';
     h+='<button class="dtab'+(detailTab!=="inside"?" on":"")+'" onclick="setDetailTab(&#39;&#39;)">'+node.name+'</button>';
     if(hasKidsHere)
-      h+='<button class="dtab'+(detailTab==="inside"?" on":"")+'" onclick="setDetailTab(&#39;inside&#39;)">Inside '+node.name+'<span class="n">'+ch.length+'</span></button>';
+      h+='<button class="dtab'+(detailTab==="inside"?" on":"")+'" onclick="setDetailTab(&#39;inside&#39;)">Inside '+node.name+'<span class="n">'+insideCh.length+'</span></button>';
     h+='</div>';
   }
 
   if(node && hasAnyTab){
     h+='<div class="dtabs">';
-    if(hasKidsHere) h+='<button class="dtab'+(detailTab==="specific"?" on":"")+'" onclick="setDetailTab(&#39;specific&#39;)">More specific<span class="n">'+ch.length+'</span></button>';
+    if(hasKidsHere) h+='<button class="dtab'+(detailTab==="specific"?" on":"")+'" onclick="setDetailTab(&#39;specific&#39;)">More specific<span class="n">'+insideCh.length+'</span></button>';
     if(nPhoto)      h+='<button class="dtab'+(detailTab==="photo"?" on":"")+'" onclick="setDetailTab(&#39;photo&#39;)">Photo<span class="n">'+nPhoto+'</span></button>';
     if(phys)          h+='<button class="dtab'+(detailTab==="phys"?" on":"")+'" onclick="setDetailTab(&#39;phys&#39;)">Physiology</button>';
     if(kwList.length) h+='<button class="dtab'+(detailTab==="keyword"?" on":"")+'" onclick="setDetailTab(&#39;keyword&#39;)">Keyword<span class="n">'+kwList.length+'</span></button>';
@@ -822,16 +824,19 @@ function render(){
   }
 
   if(isEntryNode && detailTab==="inside"){
-    h+=kidsGridHTML(ch, false);
+    h+=kidsGridHTML(insideCh, false);
   } else if(isEntryNode){
     const items = qualItems(ep.next_set);
     h+='<div class="grid">';
     items.forEach(function(it){
       const p=picked(it.code);
-      h+='<div class="card'+(p?" picked":"")+'" onclick="togglePick(&#39;'+it.code+'&#39;)">' +
+      const sub=kids(it.code).length;
+      const act = sub ? 'go(&#39;'+it.code+'&#39;)' : 'togglePick(&#39;'+it.code+'&#39;)';
+      h+='<div class="card'+(p?" picked":"")+'" onclick="'+act+'">' +
          '<div class="c-accent" style="background:var(--em)"></div>' +
          '<div class="c-name">'+it.name+'</div>' +
-         '<div class="c-foot"><span></span>' +
+         '<div class="c-foot">' +
+         (sub?'<span class="c-count">'+sub+' inside</span>':'<span></span>') +
          '<button class="c-add'+(p?" on":"")+'" onclick="togglePick(&#39;'+it.code+'&#39;,event)">'+(p?"✓":"+")+'</button>' +
          '</div></div>';
     });
@@ -868,7 +873,7 @@ function render(){
   } else if(detailTab==="photo" && nPhoto){
     h+=imagesHTML(node.code);
   } else if(hasKidsHere){
-    h+=kidsGridHTML(ch, !current);
+    h+=kidsGridHTML(insideCh, !current);
   }
 
   if(hasDesc){
