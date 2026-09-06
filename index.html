@@ -514,8 +514,9 @@ function togglePick(code,ev){
 /* is this code one of the items an entry point hands over to? */
 function isFromEntrySet(code){
   return Object.keys(ENTRY).some(function(k){
+    if(code.indexOf(k+".")===0) return true;      /* anything under the entry node */
     const ns = ENTRY[k].next_set;
-    return ns && code.indexOf(ns+".")===0;
+    return ns && code.indexOf(ns+".")===0;        /* or in the set it hands over to */
   });
 }
 
