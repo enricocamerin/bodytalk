@@ -96,7 +96,6 @@
     -webkit-user-select:none;user-select:none;}
   .card:active{background:var(--card-hi);transform:scale(.985);}
   .card.wide{min-height:0;flex-direction:row;align-items:center;gap:14px;}
-  .card.picked{border-color:var(--em);background:rgba(61,220,151,.10);}
 
   .c-accent{position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;}
   .c-code{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--text-3);
@@ -108,10 +107,11 @@
   .c-leaf{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--em);
     letter-spacing:.12em;text-transform:uppercase;}
 
-  .c-add{width:30px;height:30px;flex-shrink:0;border-radius:50%;border:1px solid var(--edge-2);
-    background:transparent;color:var(--text-3);font-size:16px;line-height:1;cursor:pointer;
-    display:flex;align-items:center;justify-content:center;font-family:inherit;font-weight:300;}
-  .c-add.on{background:var(--em);border-color:var(--em);color:var(--void);font-weight:600;}
+  .c-add{width:38px;height:38px;flex-shrink:0;border-radius:50%;border:1px solid var(--em);
+    background:transparent;color:var(--em);font-size:24px;line-height:1;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;font-family:inherit;font-weight:400;
+    padding-bottom:2px;}
+  .c-add:active{background:var(--em);color:var(--void);}
 
   /* ---------- detail ---------- */
   .dtab .step{display:inline-flex;align-items:center;justify-content:center;
@@ -498,8 +498,6 @@ function ancestors(code){
   return p.map(function(_,i){return byCode[p.slice(0,i+1).join(".")];}).filter(Boolean);
 }
 
-/* nodes only get a kind at save time, so match on the code alone */
-function picked(c){ return NODES.some(function(n){ return n.code===c; }); }
 
 /* a pick always adds: the same step may appear more than once in a formula.
    removing is done with the x on the chip */
@@ -760,9 +758,9 @@ function imageCount(code){
 function kidsGridHTML(ch, wide){
   let h='<div class="grid'+(wide?" wide":"")+'">';
   ch.forEach(function(k){
-    const n=kids(k.code).length, lk=linksOf(k.code).length>0, p=picked(k.code);
+    const n=kids(k.code).length, lk=linksOf(k.code).length>0;
     const isEntry = !!ENTRY[k.code];
-    h+='<div class="card'+(wide?" wide":"")+(p?" picked":"")+'" onclick="go(&#39;'+k.code+'&#39;)">' +
+    h+='<div class="card'+(wide?" wide":"")+'" onclick="go(&#39;'+k.code+'&#39;)">' +
        '<div class="c-accent" style="background:'+(isEntry?"var(--em)":hueOf(k.code))+';'+
        (isEntry?"width:5px;":"")+'"></div>';
     if(wide){
@@ -868,10 +866,9 @@ function render(){
     const items = qualItems(ep.next_set);
     h+='<div class="grid">';
     items.forEach(function(it){
-      const p=picked(it.code);
       const sub=kids(it.code).length;
       const act = sub ? 'go(&#39;'+it.code+'&#39;)' : 'addPick(&#39;'+it.code+'&#39;)';
-      h+='<div class="card'+(p?" picked":"")+'" onclick="'+act+'">' +
+      h+='<div class="card" onclick="'+act+'">' +
          '<div class="c-accent" style="background:var(--em)"></div>' +
          '<div class="c-name">'+it.name+'</div>' +
          '<div class="c-foot">' +
@@ -898,9 +895,8 @@ function render(){
     if(q&&q.note) h+='<div class="note" style="margin-bottom:14px">'+q.note+'</div>';
     h+='<div class="grid">';
     items.forEach(function(it){
-      const p=picked(it.code);
       const sub=kids(it.code).length;
-      h+='<div class="card'+(p?" picked":"")+'" onclick="go(&#39;'+it.code+'&#39;)">' +
+      h+='<div class="card" onclick="go(&#39;'+it.code+'&#39;)">' +
          '<div class="c-accent" style="background:var(--em)"></div>' +
          '<div class="c-code">'+it.code+'</div><div class="c-name">'+it.name+'</div>' +
          '<div class="c-foot">' +
@@ -946,7 +942,7 @@ function renderTray(){
     (segment==="acim" ? '<button class="mini" onclick="closeAcim()">Close ACIM</button>' : '') +
     '<button class="mini'+(parcelMode?" go":"")+'" onclick="startParceling()" '+(parcelMode?"disabled":"")+'>Parceling</button>' +
     (parcelMode ? '<button class="mini go" onclick="closeParceling()">Close parceling</button>' : '') +
-    '<button class="mini" onclick="startSub()" '+(!activeId?"disabled":"")+'>Sub-formula</button>' +
+    '<button class="mini'+(pendingBranch?" go":"")+'" onclick="startSub()" '+(!activeId?"disabled":"")+'>Sub-formula</button>' +
     '<button class="mini" onclick="closeSub()" '+(!insideSub()?"disabled":"")+'>Close sub</button>' +
     '<button class="mini" onclick="newFormula()" '+(!n?"disabled":"")+'>Parallel</button>' +
     '<button class="mini" onclick="clearAll()" '+(!n?"disabled":"")+'>Clear</button>' +
