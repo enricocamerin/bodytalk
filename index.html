@@ -373,11 +373,11 @@ function deviceId(){
 }
 const DEVICE=deviceId();
 
-let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={},QUALS=[],KW={},ENTRY={},AC={};
+let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={},QUALS=[],KW={},ENTRY={},AC={},NOTE={};
 let current=null, view="browse";
 let detailTab="";   /* 'specific' | 'orientation' | 'photo' */
 let NODES=[];        /* {id,parentId,branch,code,name} */
-const BUILD="b260906.0814";   /* shown in the header so the loaded version is never in doubt */
+const BUILD="b260906.0940";   /* shown in the header so the loaded version is never in doubt */
 let activeId=null;   /* where the next pick attaches */
 let pendingBranch=false;   /* next pick opens a declared sub-formula */
 let segment="protocol";    /* 'acim' while the forgiveness part is open */
@@ -444,6 +444,7 @@ async function loadRef(){
   OC={}; (d.organs||[]).forEach(function(r){OC[r.code]=r;});
   QUALS = d.quals||[];
   AC={}; (d.acim||[]).forEach(function(r){AC[r.code]=r;});
+  NOTE={}; (d.notes||[]).forEach(function(r){NOTE[r.code]=r;});
   ENTRY={}; (d.entries||[]).forEach(function(r){ ENTRY[r.code]=r; });
   KW={}; (d.keywords||[]).forEach(function(r){
     (KW[r.protocol_code]=KW[r.protocol_code]||[]).push(r);
@@ -669,6 +670,15 @@ function dimFieldsOne(lk){
     return {dim:lk.code,rows:[
       ["Organ",d.organ],
       ["Description",d.description],
+      ["Sources",d.sources,1]]};
+  }
+  if(lk.table==="dim_note"){
+    const d=NOTE[lk.code]; if(!d) return null;
+    if(!d.body) return {dim:lk.code,empty:1};
+    return {dim:lk.code,rows:[
+      ["Note",d.title],
+      ["Detail",d.body],
+      ["Page",d.page_ref],
       ["Sources",d.sources,1]]};
   }
   if(lk.table==="dim_acim_lesson"){
