@@ -377,7 +377,7 @@ let NODES=[];        /* {id,parentId,branch,code,name} */
 let activeId=null;   /* where the next pick attaches */
 let pendingBranch=false;   /* next pick opens a declared sub-formula */
 let segment="protocol";    /* 'acim' while the forgiveness part is open */
-let selectMode=false, selected={}, groupSeq=0;
+let groupSeq=0;
 let parcelMode=false, parcelId=null;   /* live parcel: new picks land in one box */
 let collapsed={};          /* node id -> true when its sub-formula is folded */
 let sessions=[];
@@ -505,9 +505,16 @@ function togglePick(code,ev){
     segment = (ENTRY[code] || isFromEntrySet(code)) ? "acim" : "protocol";
   }
   const id=newId();
-  const nd={ id:id, parentId:activeId, branch:pendingBranch, segment:segment,
+  const branch=pendingBranch;
+  const nd={ id:id, parentId:activeId, branch:branch, segment:segment,
              code:code, name:byCode[code].name };
   if(parcelMode) nd.group=parcelId;
+  /* if the active step already continues somewhere, slot in between the two
+     instead of forking: a fork would leave the old tail undrawable */
+  if(!branch && activeId){
+    const cont=childrenOfNode(activeId).find(function(c){ return !c.branch; });
+    if(cont) cont.parentId=id;
+  }
   NODES.push(nd);
   pendingBranch=false;
   activeId=id;                       /* the chain continues from here */
@@ -542,26 +549,6 @@ function closeParceling(){
   renderTray();                 /* activeId is untouched: the chain continues */
 }
 
-function toggleSelectMode(){
-  selectMode=!selectMode;
-  if(!selectMode) selected={};
-  renderTray();
-}
-function toggleSelect(id){
-  if(selected[id]) delete selected[id]; else selected[id]=true;
-  renderTray();
-}
-function selectedCount(){ return Object.keys(selected).length; }
-
-/* wrap the selected chips into a sub-box inside their segment */
-function groupSelected(){
-  const ids=Object.keys(selected);
-  if(ids.length<2) return;
-  const g=++groupSeq;
-  NODES.forEach(function(n){ if(selected[n.id]) n.group=g; });
-  selected={}; selectMode=false;
-  renderTray();
-}
 function ungroup(g){
   NODES.forEach(function(n){ if(n.group===g) delete n.group; });
   renderTray();
@@ -625,7 +612,7 @@ function total(){ return NODES.length; }
 function clearAll(){
   if(!confirm("Clear the current session? Nothing is saved yet.")) return;
   NODES=[]; activeId=null; pendingBranch=false; segment="protocol";
-  selectMode=false; selected={}; groupSeq=0; parcelMode=false; parcelId=null; render(); renderTray();
+  groupSeq=0; parcelMode=false; parcelId=null; render(); renderTray();
 }
 
 function go(code){
@@ -1072,11 +1059,10 @@ function alignSubs(scope){
 
 function chipHTML(nd){
   const here=nd.id===activeId;
-  const sel=!!selected[nd.id];
   const inParcel = parcelMode && nd.group===parcelId;
   const act = parcelMode ? 'toggleParcel(&#39;'+nd.id+'&#39;,event)'
                          : 'setActive(&#39;'+nd.id+'&#39;,event)';
-  return '<span class="chip'+(here?" here":"")+((sel||inParcel)?" sel":"")+'" data-chip="'+nd.id+'" ' +
+  return '<span class="chip'+(here?" here":"")+(inParcel?" sel":"")+'" data-chip="'+nd.id+'" ' +
     'onclick="'+act+'">' +
     '<span class="cc">'+nd.code+'</span>'+short(nd.name)+
     (parcelMode?'':'<span class="x" onclick="removeNode(&#39;'+nd.id+'&#39;)">\u00D7</span>')+
@@ -1115,7 +1101,7 @@ async function doSave(){
     await api("?action=save",{method:"POST",headers:{"content-type":"application/json"},
       body:JSON.stringify({device_id:DEVICE,title:title||null,notes:notes||null,session_date:date,steps:steps})});
     closeSave(); NODES=[]; activeId=null; pendingBranch=false; segment="protocol";
-    selectMode=false; selected={}; groupSeq=0; parcelMode=false; parcelId=null; renderTray();
+    groupSeq=0; parcelMode=false; parcelId=null; renderTray();
     await loadSessions(); setView("log");
   }catch(e){ b.textContent="Save"; b.disabled=false; alert("Could not save: "+e.message); }
 }
