@@ -564,14 +564,15 @@ function removeNode(id){
   for(let i=0;i<kill.length;i++)
     childrenOfNode(kill[i]).forEach(function(c){ kill.push(c.id); });
   NODES=NODES.filter(function(n){ return kill.indexOf(n.id)<0; });
-  if(kill.indexOf(activeId)>=0) activeId=null;
+  if(kill.indexOf(activeId)>=0)
+    activeId = NODES.length ? NODES[NODES.length-1].id : null;
   render(); renderTray();
 }
 
 /* tap a chip to continue from there instead of from the last one */
 function setActive(id,ev){
   if(ev) ev.stopPropagation();
-  activeId = (activeId===id) ? null : id;
+  activeId = id;               /* only Parallel starts a new formula */
   pendingBranch=false;
   renderTray();
 }
@@ -904,12 +905,6 @@ function render(){
     h+='<div style="height:26px"></div>';
     h+='<div class="eyebrow" style="color:var(--text-3)">Description</div>';
     h+=dimHTML(node.code);
-  }
-
-  if(node){
-    const p=picked(node.code);
-    h+='<button class="btn'+(p?" ghost":"")+'" onclick="togglePick(&#39;'+node.code+'&#39;)">' +
-       (p?"✓ Added to formula":"Add to formula")+'</button>';
   }
 
   m.innerHTML=h;
