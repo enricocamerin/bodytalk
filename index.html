@@ -101,6 +101,8 @@
   .card.wide{min-height:0;flex-direction:row;align-items:center;gap:14px;}
 
   .c-accent{position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;}
+  .card.warn{background:rgba(251,191,36,.10);border-color:rgba(251,191,36,.42);}
+  .c-warn{font-size:11.5px;color:#FBBF24;line-height:1.4;margin-top:2px;}
   .c-code{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--text-3);
     letter-spacing:.1em;}
   .c-name{font-size:15.5px;font-weight:400;line-height:1.28;flex:1;}
@@ -378,11 +380,11 @@ function deviceId(){
 }
 const DEVICE=deviceId();
 
-let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={},QUALS=[],KW={},ENTRY={},AC={},NOTE={},MX={};
+let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={},QUALS=[],KW={},ENTRY={},AC={},NOTE={},MX={},TT={};
 let current=null, view="browse";
 let detailTab="";   /* 'specific' | 'orientation' | 'photo' */
 let NODES=[];        /* {id,parentId,branch,code,name} */
-const BUILD = "matrix-dim";   /* shown in the header so the loaded version is never in doubt */
+const BUILD = "tentacle-dim";   /* shown in the header so the loaded version is never in doubt */
 let activeId=null;   /* where the next pick attaches */
 let pendingBranch=false;   /* next pick opens a declared sub-formula */
 let segment="protocol";    /* 'acim' while the forgiveness part is open */
@@ -451,6 +453,7 @@ async function loadRef(){
   AC={}; (d.acim||[]).forEach(function(r){AC[r.code]=r;});
   NOTE={}; (d.notes||[]).forEach(function(r){NOTE[r.code]=r;});
   MX={}; (d.matrix||[]).forEach(function(r){MX[r.code]=r;});
+  TT={}; (d.tentacles||[]).forEach(function(r){TT[r.code]=r;});
   ENTRY={}; (d.entries||[]).forEach(function(r){ ENTRY[r.code]=r; });
   KW={}; (d.keywords||[]).forEach(function(r){
     (KW[r.protocol_code]=KW[r.protocol_code]||[]).push(r);
@@ -704,6 +707,15 @@ function dimFieldsOne(lk){
       ["Page",d.page_ref],
       ["Sources",d.sources,1]]};
   }
+  if(lk.table==="dim_tentacle"){
+    const d=TT[lk.code]; if(!d) return null;
+    return {dim:lk.code,rows:[
+      ["What it represents",d.represents],
+      ["What information is required",d.info_needed],
+      ["Hand contact",d.hand_contact],
+      ["Note",d.note],
+      ["Sources",d.sources,1]]};
+  }
   if(lk.table==="dim_matrix"){
     const d=MX[lk.code]; if(!d) return null;
     if(!d.types&&!d.location&&!d.labeled_by&&!d.handling&&!d.tentacles)
@@ -926,9 +938,13 @@ function render(){
     h+='<div class="grid">';
     items.forEach(function(it){
       const sub=kids(it.code).length;
-      h+='<div class="card" onclick="go(&#39;'+it.code+'&#39;)">' +
-         '<div class="c-accent" style="background:var(--em)"></div>' +
+      const tl=lkOfTable(it.code,"dim_tentacle");
+      const td=tl?TT[tl.code]:null;
+      const warn=td&&td.accent==="warn";
+      h+='<div class="card'+(warn?" warn":"")+'" onclick="go(&#39;'+it.code+'&#39;)">' +
+         '<div class="c-accent" style="background:'+(warn?"#FBBF24":"var(--em)")+'"></div>' +
          '<div class="c-code">'+it.code+'</div><div class="c-name">'+it.name+'</div>' +
+         (warn&&td.note?'<div class="c-warn">'+td.note+'</div>':'') +
          '<div class="c-foot">' +
          (sub?'<span class="c-count">'+sub+' inside</span>':'<span></span>') +
          '<button class="c-add" onclick="addPick(&#39;'+it.code+'&#39;,event)">+</button>' +
