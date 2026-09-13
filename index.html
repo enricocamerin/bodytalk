@@ -396,7 +396,7 @@ let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={},QUALS=[],KW={},ENTRY={},
 let current=null, view="browse";
 let detailTab="";   /* 'specific' | 'orientation' | 'photo' */
 let NODES=[];        /* {id,parentId,branch,code,name} */
-const BUILD = "technique-dim";   /* shown in the header so the loaded version is never in doubt */
+const BUILD = "technique-fix";   /* shown in the header so the loaded version is never in doubt */
 let activeId=null;   /* where the next pick attaches */
 let pendingBranch=false;   /* next pick opens a declared sub-formula */
 let segment="protocol";    /* 'acim' while the forgiveness part is open */
@@ -896,7 +896,7 @@ function render(){
   const epSet       = (node && ENTRY[node.code]) ? ENTRY[node.code].next_set : null;
   const insideCh    = epSet ? ch.filter(function(k){return k.code!==epSet;}) : ch;
   const hasKidsHere = insideCh.length>0;
-  const hasDesc     = node && dimFields(node.code).length>0;
+  const hasDesc     = node && (dimFields(node.code).length>0 || techniqueSteps(node.code).length>0);
   const nPhoto      = node ? imageCount(node.code) : 0;
   const kwList      = node ? (KW[node.code]||[]) : [];
   const phys        = node ? physOf(node.code) : null;
