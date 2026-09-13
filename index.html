@@ -115,6 +115,10 @@
     font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--em);}
   .tq-title{font-size:14.5px;font-weight:500;margin-bottom:3px;}
   .tq-body{font-size:13.5px;color:var(--text-2);line-height:1.5;font-weight:300;}
+  .tq-types{margin-top:9px;display:flex;flex-direction:column;gap:7px;}
+  .tq-type{background:var(--card);border:1px solid var(--edge);border-radius:11px;padding:9px 11px;}
+  .tq-type-name{font-size:12.5px;font-weight:600;color:var(--em);margin-bottom:2px;}
+  .tq-type-list{font-size:13px;color:var(--text-2);font-weight:300;line-height:1.45;}
   .c-code{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--text-3);
     letter-spacing:.1em;}
   .c-name{font-size:15.5px;font-weight:400;line-height:1.28;flex:1;}
@@ -396,7 +400,7 @@ let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={},QUALS=[],KW={},ENTRY={},
 let current=null, view="browse";
 let detailTab="";   /* 'specific' | 'orientation' | 'photo' */
 let NODES=[];        /* {id,parentId,branch,code,name} */
-const BUILD = "technique-fix";   /* shown in the header so the loaded version is never in doubt */
+const BUILD = "step1-types";   /* shown in the header so the loaded version is never in doubt */
 let activeId=null;   /* where the next pick attaches */
 let pendingBranch=false;   /* next pick opens a declared sub-formula */
 let segment="protocol";    /* 'acim' while the forgiveness part is open */
@@ -798,9 +802,23 @@ function techniqueHTML(code){
     } else if(!s.conditional){
       lastCond=null;
     }
-    h+='<div class="tq-step"><div class="tq-no">'+s.step_no+'</div><div>' +
+    let extra="";
+    if(s.shows_types){
+      const mats=Object.keys(MX).map(function(k){return MX[k];})
+        .filter(function(m){return m.types;})
+        .sort(function(a,b){return (a.code||"").localeCompare(b.code||"");});
+      if(mats.length){
+        extra='<div class="tq-types">';
+        mats.forEach(function(m){
+          extra+='<div class="tq-type"><div class="tq-type-name">'+m.name+'</div>' +
+                 '<div class="tq-type-list">'+m.types+'</div></div>';
+        });
+        extra+='</div>';
+      }
+    }
+    h+='<div class="tq-step"><div class="tq-no">'+s.step_no+'</div><div style="flex:1">' +
        '<div class="tq-title">'+s.title+'</div>' +
-       '<div class="tq-body">'+s.body+'</div></div></div>';
+       '<div class="tq-body">'+s.body+'</div>'+extra+'</div></div>';
   });
   return h;
 }
