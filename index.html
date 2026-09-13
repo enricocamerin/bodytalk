@@ -103,6 +103,18 @@
   .c-accent{position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;}
   .card.warn{background:rgba(251,191,36,.10);border-color:rgba(251,191,36,.42);}
   .c-warn{font-size:11.5px;color:#FBBF24;line-height:1.4;margin-top:2px;}
+
+  .tq-cond{background:rgba(251,191,36,.09);border:1px solid rgba(251,191,36,.32);
+    border-radius:12px;padding:9px 13px;margin:16px 0 10px;font-size:12.5px;
+    color:#FBBF24;font-weight:500;}
+  .tq-step{display:flex;gap:12px;padding:11px 0;border-top:1px solid var(--edge);}
+  .tq-step:first-of-type{border-top:none;}
+  .tq-no{flex-shrink:0;width:26px;height:26px;border-radius:50%;
+    background:var(--card);border:1px solid var(--edge-2);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--em);}
+  .tq-title{font-size:14.5px;font-weight:500;margin-bottom:3px;}
+  .tq-body{font-size:13.5px;color:var(--text-2);line-height:1.5;font-weight:300;}
   .c-code{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--text-3);
     letter-spacing:.1em;}
   .c-name{font-size:15.5px;font-weight:400;line-height:1.28;flex:1;}
@@ -380,11 +392,11 @@ function deviceId(){
 }
 const DEVICE=deviceId();
 
-let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={},QUALS=[],KW={},ENTRY={},AC={},NOTE={},MX={},TT={};
+let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={},QUALS=[],KW={},ENTRY={},AC={},NOTE={},MX={},TT={},TQ={};
 let current=null, view="browse";
 let detailTab="";   /* 'specific' | 'orientation' | 'photo' */
 let NODES=[];        /* {id,parentId,branch,code,name} */
-const BUILD = "tentacle-dim";   /* shown in the header so the loaded version is never in doubt */
+const BUILD = "technique-dim";   /* shown in the header so the loaded version is never in doubt */
 let activeId=null;   /* where the next pick attaches */
 let pendingBranch=false;   /* next pick opens a declared sub-formula */
 let segment="protocol";    /* 'acim' while the forgiveness part is open */
@@ -454,6 +466,7 @@ async function loadRef(){
   NOTE={}; (d.notes||[]).forEach(function(r){NOTE[r.code]=r;});
   MX={}; (d.matrix||[]).forEach(function(r){MX[r.code]=r;});
   TT={}; (d.tentacles||[]).forEach(function(r){TT[r.code]=r;});
+  TQ={}; (d.technique||[]).forEach(function(r){TQ[r.code]=r;});
   ENTRY={}; (d.entries||[]).forEach(function(r){ ENTRY[r.code]=r; });
   KW={}; (d.keywords||[]).forEach(function(r){
     (KW[r.protocol_code]=KW[r.protocol_code]||[]).push(r);
@@ -707,6 +720,7 @@ function dimFieldsOne(lk){
       ["Page",d.page_ref],
       ["Sources",d.sources,1]]};
   }
+  if(lk.table==="dim_technique_step") return null; /* rendered separately, see techniqueHTML */
   if(lk.table==="dim_tentacle"){
     const d=TT[lk.code]; if(!d) return null;
     return {dim:lk.code,rows:[
@@ -761,7 +775,39 @@ function imagesHTML(code){
   return h+'</div>';
 }
 
+function techniqueSteps(code){
+  return linksOf(code)
+    .filter(function(lk){return lk.table==="dim_technique_step";})
+    .map(function(lk){return TQ[lk.code];})
+    .filter(Boolean)
+    .sort(function(a,b){
+      const pa=parseInt(a.step_no), pb=parseInt(b.step_no);
+      if(pa!==pb) return pa-pb;
+      return (a.step_no+"").localeCompare(b.step_no+"");
+    });
+}
+function techniqueHTML(code){
+  const steps=techniqueSteps(code);
+  if(!steps.length) return "";
+  let h="";
+  let lastCond=null;
+  steps.forEach(function(s){
+    if(s.conditional && s.conditional!==lastCond){
+      h+='<div class="tq-cond">'+s.conditional+'</div>';
+      lastCond=s.conditional;
+    } else if(!s.conditional){
+      lastCond=null;
+    }
+    h+='<div class="tq-step"><div class="tq-no">'+s.step_no+'</div><div>' +
+       '<div class="tq-title">'+s.title+'</div>' +
+       '<div class="tq-body">'+s.body+'</div></div></div>';
+  });
+  return h;
+}
+
 function dimHTML(code){
+  const tq=techniqueHTML(code);
+  if(tq) return tq;
   const list=dimFields(code);
   if(!list.length) return '<div class="note">No dimension linked to this node yet.</div>';
   let h="";
