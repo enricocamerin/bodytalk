@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brain structures study key</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Spectral:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f9fb; --paper:#ffffff; --ink:#18232f; --ink-2:#4c5b6b; --rule:#d6dee6;
+  --cortex:#3f6fb1; --limbic:#b1457b; --basal:#c07f14; --dien:#23897d; --stem:#6f55bd; --cereb:#4f8534; --thal:#23897d;
+  --cortex-t:#dbe6f5; --limbic-t:#f4dde9; --basal-t:#f6e8cf; --dien-t:#d5eeea; --stem-t:#e6e0f6; --cereb-t:#dfeed6;
+  --brain:#eef1f4; --brain-line:#9aa8b6; --deep:#ffffff;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#11161c; --paper:#18202a; --ink:#e7edf3; --ink-2:#a6b4c2; --rule:#2c3845;
+    --cortex:#7fa7e0; --limbic:#e08ab3; --basal:#e3aa4c; --dien:#5cc4b6; --stem:#a592e6; --cereb:#8cc26d; --thal:#5cc4b6;
+    --cortex-t:#1f3350; --limbic-t:#462238; --basal-t:#46361a; --dien-t:#163d39; --stem-t:#2e2650; --cereb-t:#233a1a;
+    --brain:#202a35; --brain-line:#5d6c7c; --deep:#18202a;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11161c; --paper:#18202a; --ink:#e7edf3; --ink-2:#a6b4c2; --rule:#2c3845;
+  --cortex:#7fa7e0; --limbic:#e08ab3; --basal:#e3aa4c; --dien:#5cc4b6; --stem:#a592e6; --cereb:#8cc26d; --thal:#5cc4b6;
+  --cortex-t:#1f3350; --limbic-t:#462238; --basal-t:#46361a; --dien-t:#163d39; --stem-t:#2e2650; --cereb-t:#233a1a;
+  --brain:#202a35; --brain-line:#5d6c7c; --deep:#18202a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:1rem;line-height:1.55}
+main{max-width:980px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1,h2,h3{font-family:"Spectral",Georgia,"Times New Roman",serif;line-height:1.2;margin:0}
+h1{font-size:clamp(1.9rem,5vw,2.7rem);font-weight:700;letter-spacing:-.01em}
+.lede{color:var(--ink-2);max-width:66ch;margin:.75rem 0 0}
+.note{border-left:4px solid var(--rule);padding:.4rem 0 .4rem 1rem;color:var(--ink-2);max-width:70ch;margin:1.25rem 0 0}
+nav.toc{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.5rem 0 0}
+nav.toc a{color:var(--ink);text-decoration:none;border:1px solid var(--rule);border-radius:999px;padding:.25rem .8rem;font-size:.9rem;background:var(--paper)}
+nav.toc a:hover,nav.toc a:focus-visible{border-color:var(--ink-2)}
+a:focus-visible{outline:3px solid var(--cortex);outline-offset:2px}
+figure{margin:2.25rem 0 0;background:var(--paper);border:1px solid var(--rule);border-radius:14px;padding:1rem}
+figcaption{font-size:.92rem;color:var(--ink-2);margin-top:.6rem;max-width:72ch}
+figcaption strong{color:var(--ink)}
+.scroll{overflow-x:auto}
+.scroll svg{display:block;min-width:640px;width:100%;height:auto}
+svg text{font-family:"Atkinson Hyperlegible",system-ui,sans-serif}
+.lead{stroke:var(--ink-2);stroke-width:1.2;fill:none}
+.arrowhead{fill:var(--ink-2)}
+.tag circle{stroke:none}
+.tag text{font-size:13px;font-weight:700;fill:var(--paper);text-anchor:middle;dominant-baseline:central}
+.tag .name{fill:var(--ink);font-weight:400;font-size:12.5px;text-anchor:start}
+.tag .name.end{text-anchor:end}
+.c-cortex circle{fill:var(--cortex)} .c-limbic circle{fill:var(--limbic)} .c-basal circle{fill:var(--basal)}
+.c-dien circle{fill:var(--dien)} .c-stem circle{fill:var(--stem)} .c-cereb circle{fill:var(--cereb)}
+.brain{fill:var(--brain);stroke:var(--brain-line);stroke-width:1.5}
+.sulcus{stroke:var(--brain-line);stroke-width:1;stroke-dasharray:4 4;fill:none}
+.deep{fill:none;stroke-width:2;stroke-dasharray:5 3}
+.legend-key{display:flex;flex-wrap:wrap;gap:.4rem 1rem;margin-top:.6rem;font-size:.88rem;color:var(--ink-2)}
+.legend-key span{display:inline-flex;align-items:center;gap:.4rem}
+.legend-key i{width:.85rem;height:.85rem;border-radius:50%;display:inline-block}
+
+section.zone{margin-top:3rem}
+section.zone > h2{font-size:1.6rem;display:flex;align-items:center;gap:.6rem;padding-bottom:.5rem;border-bottom:3px solid var(--zc)}
+section.zone > p.zone-intro{color:var(--ink-2);margin:.6rem 0 0;max-width:70ch}
+.entry{margin-top:1.4rem;padding-left:1rem;border-left:3px solid var(--zt)}
+.entry h3{font-size:1.2rem;display:flex;align-items:baseline;gap:.55rem;flex-wrap:wrap}
+.num{font-family:"Atkinson Hyperlegible",sans-serif;font-weight:700;font-size:.85rem;color:var(--paper);background:var(--zc);border-radius:999px;min-width:2rem;padding:.1rem .5rem;text-align:center;display:inline-block}
+.entry ul{margin:.45rem 0 0;padding-left:1.15rem;max-width:74ch}
+.entry li{margin:.25rem 0}
+.new{font-size:.78rem;font-weight:700;color:var(--zc);border:1.5px solid var(--zc);border-radius:4px;padding:0 .3rem;margin-right:.3rem}
+.gap{color:var(--ink-2);font-style:italic}
+sup a{color:var(--ink-2);text-decoration:none;font-size:.75em;font-weight:700;margin-left:1px}
+sup a:hover,sup a:focus-visible{color:var(--ink);text-decoration:underline}
+.z-cortex{--zc:var(--cortex);--zt:var(--cortex-t)}
+.z-limbic{--zc:var(--limbic);--zt:var(--limbic-t)}
+.z-basal{--zc:var(--basal);--zt:var(--basal-t)}
+.z-dien{--zc:var(--dien);--zt:var(--dien-t)}
+.z-stem{--zc:var(--stem);--zt:var(--stem-t)}
+.z-cereb{--zc:var(--cereb);--zt:var(--cereb-t)}
+.z-thal{--zc:var(--thal);--zt:var(--dien-t)}
+.refs{margin-top:3.5rem;border-top:1px solid var(--rule);padding-top:1.25rem}
+.refs h2{font-size:1.4rem}
+.refs ol{padding-left:1.4rem;max-width:80ch}
+.refs li{margin:.4rem 0;font-size:.93rem;color:var(--ink-2)}
+.refs a{color:var(--ink);word-break:break-word}
+.swipe{display:none;font-size:.85rem;color:var(--ink-2);margin:0 0 .4rem}
+@media (max-width:660px){.swipe{display:block}}
+@media (max-width:560px){main{padding:1.25rem 1rem 3rem}.entry{padding-left:.75rem}}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>Brain structures, keyed to your chart numbers</h1>
+  <p class="lede">Each structure keeps the number it has on your printed PaRama Brain Psychology and Physiology chart, so you can move between the two. The functions listed here are the scientific ones, taken from the sources at the bottom of the page.</p>
+  <p class="note">The chart's own descriptions, including its planetary, S-function and R-function layer, are not reproduced here; read those on the printed chart. The figures are simplified schematics drawn for this page, not to scale. Chart numbers 22, 24 and 26 weren't legible in the photos, so they're left out.</p>
+  <nav class="toc" aria-label="Sections">
+    <a href="#figures">Figures</a>
+    <a href="#cortex">Cerebral cortex</a>
+    <a href="#limbic">Limbic system</a>
+    <a href="#basal">Basal ganglia</a>
+    <a href="#dien">Diencephalon</a>
+    <a href="#stem">Brain stem</a>
+    <a href="#cereb">Cerebellum</a>
+    <a href="#thalamus">Thalamus nuclei</a>
+    <a href="#refs">Sources</a>
+  </nav>
+</header>
+
+<div id="figures">
+<!-- FIGURE 1: midsagittal -->
+<figure>
+  <p class="swipe">Swipe sideways to see the whole figure.</p>
+  <div class="scroll">
+  <svg viewBox="0 0 760 548" role="img" aria-labelledby="f1t">
+    <title id="f1t">Schematic side view of the brain with numbered pointers to each structure</title>
+    <defs>
+      <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path class="arrowhead" d="M0,0 L10,5 L0,10 z"/>
+      </marker>
+    </defs>
+    <!-- cerebrum -->
+    <path class="brain" d="M150,300 C115,205 195,92 350,80 C485,70 605,118 632,222 C648,290 612,332 560,332 L470,322 C440,362 380,382 320,372 C258,366 218,352 198,336 C170,326 156,316 150,300 Z"/>
+    <!-- lobe hints -->
+    <path class="sulcus" d="M395,80 C390,120 380,150 372,170"/>
+    <path class="sulcus" d="M560,110 C555,150 560,185 575,215"/>
+    <path class="sulcus" d="M205,300 C260,290 330,300 400,305"/>
+    <path class="sulcus" d="M205,150 C225,170 230,205 220,240"/>
+    <!-- cerebellum -->
+    <ellipse cx="560" cy="382" rx="75" ry="48" fill="var(--cereb-t)" stroke="var(--cereb)" stroke-width="1.5"/>
+    <path d="M500,370 C530,360 590,360 625,375 M505,392 C540,384 590,386 622,398" stroke="var(--cereb)" stroke-width="1" fill="none" opacity=".6"/>
+    <!-- brain stem -->
+    <rect x="430" y="310" width="46" height="40" rx="10" fill="var(--stem-t)" stroke="var(--stem)" stroke-width="1.5"/>
+    <ellipse cx="455" cy="377" rx="31" ry="27" fill="var(--stem-t)" stroke="var(--stem)" stroke-width="1.5"/>
+    <path d="M430,402 L480,402 L470,478 L440,478 Z" fill="var(--stem-t)" stroke="var(--stem)" stroke-width="1.5"/>
+    <!-- cingulate + corpus callosum -->
+    <path d="M252,218 C282,130 492,130 548,206" stroke="var(--limbic)" stroke-width="12" fill="none" stroke-linecap="round" opacity=".55"/>
+    <path d="M272,222 C302,162 470,160 522,215" stroke="var(--cortex)" stroke-width="13" fill="none" stroke-linecap="round"/>
+    <path d="M272,222 C258,238 268,252 290,246" stroke="var(--cortex)" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <!-- septal -->
+    <ellipse cx="322" cy="252" rx="17" ry="13" fill="var(--limbic-t)" stroke="var(--limbic)" stroke-width="1.5"/>
+    <!-- thalamus / hypothalamus / mammillary -->
+    <ellipse cx="425" cy="255" rx="44" ry="27" fill="var(--dien-t)" stroke="var(--dien)" stroke-width="1.8"/>
+    <ellipse cx="377" cy="301" rx="26" ry="15" fill="var(--dien-t)" stroke="var(--dien)" stroke-width="1.5"/>
+    <circle cx="401" cy="318" r="6.5" fill="var(--limbic)"/>
+    <!-- deep projected: amygdala + hippocampus -->
+    <ellipse class="deep" cx="345" cy="341" rx="13" ry="10" stroke="var(--limbic)"/>
+    <path class="deep" d="M362,348 C400,346 448,336 478,305" stroke="var(--limbic)" stroke-width="7" opacity=".7"/>
+
+    <!-- leader lines -->
+    <g>
+      <line class="lead" x1="84" y1="200" x2="168" y2="228" marker-end="url(#arw)"/>
+      <line class="lead" x1="160" y1="54" x2="255" y2="112" marker-end="url(#arw)"/>
+      <line class="lead" x1="266" y1="44" x2="315" y2="152" marker-end="url(#arw)"/>
+      <line class="lead" x1="360" y1="36" x2="386" y2="166" marker-end="url(#arw)"/>
+      <line class="lead" x1="574" y1="46" x2="525" y2="122" marker-end="url(#arw)"/>
+      <line class="lead" x1="696" y1="226" x2="630" y2="236" marker-end="url(#arw)"/>
+      <line class="lead" x1="696" y1="164" x2="462" y2="250" marker-end="url(#arw)"/>
+      <line class="lead" x1="696" y1="318" x2="480" y2="326" marker-end="url(#arw)"/>
+      <line class="lead" x1="696" y1="442" x2="615" y2="400" marker-end="url(#arw)"/>
+      <line class="lead" x1="84" y1="280" x2="303" y2="252" marker-end="url(#arw)"/>
+      <line class="lead" x1="84" y1="330" x2="350" y2="302" marker-end="url(#arw)"/>
+      <line class="lead" x1="84" y1="380" x2="330" y2="342" marker-end="url(#arw)"/>
+      <line class="lead" x1="164" y1="452" x2="255" y2="352" marker-end="url(#arw)"/>
+      <line class="lead" x1="240" y1="460" x2="397" y2="326" marker-end="url(#arw)"/>
+      <line class="lead" x1="338" y1="490" x2="428" y2="344" marker-end="url(#arw)"/>
+      <line class="lead" x1="434" y1="498" x2="448" y2="470" marker-end="url(#arw)"/>
+      <line class="lead" x1="538" y1="488" x2="470" y2="398" marker-end="url(#arw)"/>
+      <line class="lead" x1="634" y1="488" x2="478" y2="440" marker-end="url(#arw)"/>
+    </g>
+    <!-- tags -->
+    <g class="tag c-cortex"><circle cx="70" cy="200" r="13"/><text x="70" y="200">18</text><text class="name" x="30" y="178">Prefrontal</text></g>
+    <g class="tag c-cortex"><circle cx="150" cy="44" r="13"/><text x="150" y="44">17</text><text class="name end" x="132" y="48">Frontal lobe</text></g>
+    <g class="tag c-limbic"><circle cx="266" cy="34" r="13"/><text x="266" y="34">16</text><text class="name end" x="248" y="38">Cingulate</text></g>
+    <g class="tag c-cortex"><circle cx="360" cy="22" r="13"/><text x="360" y="22">15</text><text class="name" x="378" y="20">Corpus callosum</text></g>
+    <g class="tag c-cortex"><circle cx="588" cy="40" r="13"/><text x="588" y="40">19</text><text class="name" x="606" y="44">Parietal lobe</text></g>
+    <g class="tag c-cortex"><circle cx="710" cy="226" r="13"/><text x="710" y="226">20</text><text class="name end" x="742" y="252">Occipital</text></g>
+    <g class="tag c-dien"><circle cx="710" cy="164" r="13"/><text x="710" y="164">1</text><text class="name end" x="742" y="190">Thalamus</text></g>
+    <g class="tag c-stem"><circle cx="710" cy="318" r="13"/><text x="710" y="318">14</text><text class="name end" x="742" y="344">Midbrain</text></g>
+    <g class="tag c-cereb"><circle cx="710" cy="442" r="13"/><text x="710" y="442">10</text><text class="name end" x="748" y="468">Cerebellum</text></g>
+    <g class="tag c-limbic"><circle cx="70" cy="280" r="13"/><text x="70" y="280">27</text><text class="name" x="20" y="262">Septal region</text></g>
+    <g class="tag c-dien"><circle cx="70" cy="330" r="13"/><text x="70" y="330">2</text><text class="name" x="20" y="312">Hypothalamus</text></g>
+    <g class="tag c-limbic"><circle cx="70" cy="380" r="13"/><text x="70" y="380">3</text><text class="name" x="20" y="362">Amygdala*</text></g>
+    <g class="tag c-cortex"><circle cx="150" cy="456" r="13"/><text x="150" y="456">21</text><text class="name" x="100" y="482">Temporal lobe</text></g>
+    <g class="tag c-limbic"><circle cx="232" cy="472" r="13"/><text x="232" y="472">25</text><text class="name" x="176" y="500">Mammillary bodies</text></g>
+    <g class="tag c-limbic"><circle cx="332" cy="502" r="13"/><text x="332" y="502">23</text><text class="name" x="292" y="530">Hippocampus*</text></g>
+    <g class="tag c-stem"><circle cx="430" cy="510" r="12"/><text x="430" y="510">13</text><text class="name" x="408" y="533">Medulla</text></g>
+    <g class="tag c-stem"><circle cx="542" cy="500" r="12"/><text x="542" y="500">11</text><text class="name" x="528" y="530">Pons</text></g>
+    <g class="tag c-stem"><circle cx="640" cy="500" r="12"/><text x="640" y="500">12</text><text class="name" x="608" y="530">Brain stem</text></g>
+  </svg>
+  </div>
+  <figcaption><strong>Figure 1. Side view (midline cut).</strong> Arrows point from each chart number to its structure. * Dashed outlines mark structures that sit deeper and further to the side, shown here projected onto the midline view. The basal ganglia aren't visible in this view; see Figure 2.</figcaption>
+  <div class="legend-key">
+    <span><i style="background:var(--cortex)"></i>Cortex and corpus callosum</span>
+    <span><i style="background:var(--limbic)"></i>Limbic</span>
+    <span><i style="background:var(--basal)"></i>Basal ganglia</span>
+    <span><i style="background:var(--dien)"></i>Diencephalon</span>
+    <span><i style="background:var(--stem)"></i>Brain stem</span>
+    <span><i style="background:var(--cereb)"></i>Cerebellum</span>
+  </div>
+</figure>
+
+<!-- FIGURE 2: coronal -->
+<figure>
+  <p class="swipe">Swipe sideways to see the whole figure.</p>
+  <div class="scroll">
+  <svg viewBox="0 0 760 430" role="img" aria-labelledby="f2t">
+    <title id="f2t">Schematic front-to-back slice showing the basal ganglia with numbered pointers</title>
+    <path class="brain" d="M380,40 C560,34 680,110 680,215 C680,300 630,352 580,360 C545,366 520,345 500,330 C470,345 430,352 400,338 L380,330 L360,338 C330,352 290,345 260,330 C240,345 215,366 180,360 C130,352 80,300 80,215 C80,110 200,34 380,40 Z"/>
+    <line x1="380" y1="44" x2="380" y2="110" stroke="var(--brain-line)" stroke-width="1.5"/>
+    <!-- ventricles -->
+    <path d="M370,112 C350,108 330,118 322,132 C342,130 360,128 370,136 Z" fill="var(--ink-2)" opacity=".45"/>
+    <path d="M390,112 C410,108 430,118 438,132 C418,130 400,128 390,136 Z" fill="var(--ink-2)" opacity=".45"/>
+    <rect x="377" y="165" width="6" height="70" rx="3" fill="var(--ink-2)" opacity=".45"/>
+    <!-- both hemispheres: caudate, putamen, GP, thalamus, STN, SN, amygdala, tail -->
+    <g id="hemi">
+      <ellipse cx="444" cy="130" rx="18" ry="15" fill="var(--basal-t)" stroke="var(--basal)" stroke-width="1.6"/>
+      <path d="M520,138 C552,160 556,222 522,246 C508,214 508,168 520,138 Z" fill="var(--basal-t)" stroke="var(--basal)" stroke-width="1.6"/>
+      <path d="M498,166 C512,184 512,220 498,236 C488,214 488,186 498,166 Z" fill="var(--basal)" opacity=".35" stroke="var(--basal)" stroke-width="1.4"/>
+      <ellipse cx="412" cy="198" rx="27" ry="33" fill="var(--dien-t)" stroke="var(--dien)" stroke-width="1.6"/>
+      <ellipse cx="424" cy="248" rx="13" ry="6" fill="var(--basal)" opacity=".75"/>
+      <path d="M404,270 C420,262 440,264 452,272 C440,280 418,280 404,270 Z" fill="var(--basal)" opacity=".95"/>
+      <circle cx="566" cy="268" r="7" fill="var(--basal-t)" stroke="var(--basal)" stroke-width="1.4"/>
+      <ellipse cx="548" cy="306" rx="17" ry="12" fill="var(--limbic-t)" stroke="var(--limbic)" stroke-width="1.6"/>
+    </g>
+    <use href="#hemi" transform="translate(760,0) scale(-1,1)"/>
+    <ellipse cx="380" cy="258" rx="15" ry="17" fill="var(--dien-t)" stroke="var(--dien)" stroke-width="1.6"/>
+    <!-- leaders -->
+    <line class="lead" x1="690" y1="66" x2="460" y2="124" marker-end="url(#arw)"/>
+    <line class="lead" x1="690" y1="118" x2="546" y2="170" marker-end="url(#arw)"/>
+    <line class="lead" x1="690" y1="170" x2="506" y2="198" marker-end="url(#arw)"/>
+    <line class="lead" x1="690" y1="222" x2="438" y2="196" marker-end="url(#arw)"/>
+    <line class="lead" x1="690" y1="282" x2="578" y2="268" marker-end="url(#arw)"/>
+    <line class="lead" x1="690" y1="340" x2="567" y2="308" marker-end="url(#arw)"/>
+    <line class="lead" x1="232" y1="400" x2="410" y2="250" marker-end="url(#arw)"/>
+    <line class="lead" x1="330" y1="410" x2="416" y2="276" marker-end="url(#arw)"/>
+    <line class="lead" x1="470" y1="410" x2="384" y2="276" marker-end="url(#arw)"/>
+    <g class="tag c-basal"><circle cx="704" cy="66" r="13"/><text x="704" y="66">8</text><text class="name end" x="748" y="92">Caudate (head)</text></g>
+    <g class="tag c-basal"><circle cx="704" cy="118" r="13"/><text x="704" y="118">7</text><text class="name end" x="748" y="144">Putamen</text></g>
+    <g class="tag c-basal"><circle cx="704" cy="170" r="13"/><text x="704" y="170">5</text><text class="name end" x="748" y="196">Globus pallidus</text></g>
+    <g class="tag c-dien"><circle cx="704" cy="222" r="13"/><text x="704" y="222">1</text><text class="name end" x="748" y="248">Thalamus</text></g>
+    <g class="tag c-basal"><circle cx="704" cy="282" r="13"/><text x="704" y="282">9</text><text class="name end" x="748" y="308">Caudate (tail)</text></g>
+    <g class="tag c-limbic"><circle cx="704" cy="340" r="13"/><text x="704" y="340">3</text><text class="name end" x="748" y="366">Amygdala</text></g>
+    <g class="tag c-basal"><circle cx="222" cy="408" r="13"/><text x="222" y="408">4</text><text class="name end" x="204" y="412">Subthalamic nucleus</text></g>
+    <g class="tag c-basal"><circle cx="330" cy="418" r="11"/><text x="330" y="418">6</text></g>
+    <g class="tag c-dien"><circle cx="472" cy="418" r="11"/><text x="472" y="418">2</text></g>
+    <text x="346" y="422" font-size="12.5" fill="var(--ink)">Substantia nigra</text>
+    <text x="488" y="422" font-size="12.5" fill="var(--ink)">Hypothalamus</text>
+  </svg>
+  </div>
+  <figcaption><strong>Figure 2. Front-to-back slice through the deep nuclei.</strong> Labels are on one side only; the other side is a mirror image. Grey shapes are the fluid-filled ventricles.</figcaption>
+</figure>
+
+<!-- FIGURE 3: thalamus map -->
+<figure>
+  <p class="swipe">Swipe sideways to see the whole figure.</p>
+  <div class="scroll">
+  <svg viewBox="0 0 760 470" role="img" aria-labelledby="f3t">
+    <title id="f3t">Schematic map of the thalamus nuclei grouped by region, numbered with the chart's thalamus panel numbers</title>
+    <defs>
+      <clipPath id="egg"><path d="M80,200 C80,110 200,64 360,74 C520,84 640,124 660,206 C680,300 600,362 480,352 C360,346 200,332 120,300 C90,286 80,250 80,200 Z"/></clipPath>
+    </defs>
+    <g clip-path="url(#egg)">
+      <rect x="60" y="50" width="152" height="152" fill="var(--dien-t)"/>
+      <rect x="212" y="50" width="212" height="102" fill="var(--limbic-t)"/>
+      <rect x="212" y="50" width="212" height="18" fill="var(--stem)" opacity=".35"/>
+      <rect x="212" y="152" width="100" height="50" fill="var(--cereb-t)"/>
+      <rect x="312" y="152" width="112" height="50" fill="var(--cereb)" opacity=".3"/>
+      <rect x="424" y="50" width="260" height="222" fill="var(--cereb)" opacity=".48"/>
+      <rect x="60" y="202" width="132" height="170" fill="var(--cortex)" opacity=".42"/>
+      <rect x="192" y="202" width="80" height="170" fill="var(--cortex-t)"/>
+      <rect x="272" y="202" width="60" height="170" fill="var(--cortex)" opacity=".2"/>
+      <rect x="332" y="202" width="92" height="170" fill="var(--cortex)" opacity=".62"/>
+      <rect x="424" y="272" width="90" height="100" fill="var(--cortex)" opacity=".32"/>
+      <rect x="514" y="272" width="170" height="100" fill="var(--cereb)" opacity=".48"/>
+      <line x1="60" y1="202" x2="424" y2="202" stroke="var(--paper)" stroke-width="2.5"/>
+      <line x1="192" y1="202" x2="192" y2="372" stroke="var(--paper)" stroke-width="2.5"/>
+      <line x1="272" y1="202" x2="272" y2="372" stroke="var(--paper)" stroke-width="2.5"/>
+      <line x1="332" y1="202" x2="332" y2="372" stroke="var(--paper)" stroke-width="2.5"/>
+      <line x1="424" y1="50" x2="424" y2="372" stroke="var(--paper)" stroke-width="2.5"/>
+      <line x1="424" y1="272" x2="514" y2="272" stroke="var(--paper)" stroke-width="2.5"/>
+      <line x1="514" y1="272" x2="514" y2="372" stroke="var(--paper)" stroke-width="2.5"/>
+      <line x1="312" y1="152" x2="312" y2="202" stroke="var(--paper)" stroke-width="2.5"/>
+      <!-- internal medullary lamina (Y) -->
+      <path d="M424,152 L212,152 L150,56 M212,152 L130,232" stroke="var(--paper)" stroke-width="12" fill="none" stroke-linejoin="round"/>
+      <path d="M424,152 L212,152 L150,56 M212,152 L130,232" stroke="var(--stem)" stroke-width="3" fill="none" stroke-dasharray="6 4"/>
+      <ellipse cx="404" cy="162" rx="22" ry="13" fill="var(--stem)" opacity=".8"/>
+    </g>
+    <path d="M80,200 C80,110 200,64 360,74 C520,84 640,124 660,206 C680,300 600,362 480,352 C360,346 200,332 120,300 C90,286 80,250 80,200 Z" fill="none" stroke="var(--ink-2)" stroke-width="9" opacity=".35"/>
+    <circle cx="560" cy="360" r="26" fill="var(--basal-t)" stroke="var(--basal)" stroke-width="1.6"/>
+    <circle cx="632" cy="332" r="21" fill="var(--basal-t)" stroke="var(--basal)" stroke-width="1.6"/>
+
+    <!-- inline numbers -->
+    <g font-weight="700" font-size="17" fill="var(--ink)" text-anchor="middle">
+      <text x="140" y="150">T5</text>
+      <text x="300" y="118">T14</text>
+      <text x="258" y="184">T3</text>
+      <text x="362" y="186">T10</text>
+      <text x="560" y="180">T1</text>
+      <text x="128" y="296">T4</text>
+      <text x="232" y="296">T11</text>
+      <text x="302" y="296">T16</text>
+      <text x="378" y="296">T15</text>
+      <text x="468" y="322">T12</text>
+      <text x="560" y="366" font-size="14">T2</text>
+      <text x="632" y="337" font-size="13">T6</text>
+    </g>
+    <!-- leaders for small ones -->
+    <line class="lead" x1="300" y1="30" x2="300" y2="60" marker-end="url(#arw)"/>
+    <line class="lead" x1="200" y1="428" x2="262" y2="158" marker-end="url(#arw)"/>
+    <line class="lead" x1="476" y1="428" x2="408" y2="178" marker-end="url(#arw)"/>
+    <line class="lead" x1="690" y1="410" x2="600" y2="344" marker-end="url(#arw)"/>
+    <line class="lead" x1="60" y1="420" x2="96" y2="290" marker-end="url(#arw)"/>
+    <g class="tag c-stem"><circle cx="300" cy="15" r="14"/><text x="300" y="15" style="font-size:9.5px">T13</text><text class="name" x="322" y="19">Midline nuclei (thin band)</text></g>
+    <g class="tag c-stem"><circle cx="200" cy="442" r="14"/><text x="200" y="442" style="font-size:10px">T9</text><text class="name" x="220" y="446">Intralaminar group</text></g>
+    <g class="tag c-stem"><circle cx="476" cy="442" r="14"/><text x="476" y="442" style="font-size:10px">T7</text><text class="name" x="496" y="446">Centromedian</text></g>
+    <g class="tag c-dien"><circle cx="60" cy="434" r="14"/><text x="60" y="434" style="font-size:10px">T8</text><text class="name" x="30" y="462">Reticular (outer shell)</text></g>
+    <text x="700" y="424" font-size="12.5" fill="var(--ink)" text-anchor="end">Geniculate bodies</text>
+  </svg>
+  </div>
+  <figcaption><strong>Figure 3. Thalamus nuclei map.</strong> Front is on the left and back on the right; the upper row is the dorsal tier and the lower row the ventral tier. The dashed Y-shaped band is the internal medullary lamina, which separates the anterior, medial and lateral groups. T numbers match the Thalamus panel of your chart. This is a region map, not a drawing of true shapes.</figcaption>
+  <div class="legend-key">
+    <span><i style="background:var(--dien)"></i>Anterior group, reticular shell</span>
+    <span><i style="background:var(--limbic)"></i>Medial group</span>
+    <span><i style="background:var(--cereb)"></i>Lateral group, dorsal tier</span>
+    <span><i style="background:var(--cortex)"></i>Lateral group, ventral tier</span>
+    <span><i style="background:var(--basal)"></i>Geniculate bodies</span>
+    <span><i style="background:var(--stem)"></i>Intralaminar and midline</span>
+  </div>
+</figure>
+</div>
+
+<!-- CORTEX -->
+<section class="zone z-cortex" id="cortex">
+  <h2>Cerebral cortex</h2>
+  <p class="zone-intro">The folded outer grey matter, divided into lobes by landmark grooves.<sup><a href="#s1">1</a></sup></p>
+  <div class="entry">
+    <h3><span class="num">17</span>Frontal lobe</h3>
+    <ul>
+      <li>The precentral gyrus is the primary motor cortex; its neurons command the spinal cord to move skeletal muscles.<sup><a href="#s1">1</a></sup></li>
+      <li>The premotor area plans movements, and the frontal eye fields drive eye movements and attention to visual stimuli.<sup><a href="#s1">1</a></sup></li>
+      <li>Broca's area produces speech and in most people is on the left side only.<sup><a href="#s1">1</a></sup></li>
+      <li><span class="new">2023</span>The motor strip isn't one continuous body map: foot, hand and mouth zones alternate with regions of a separate action-control network. Other labs dispute parts of this interpretation.<sup><a href="#s12">12</a></sup></li>
+    </ul>
+  </div>
+  <div class="entry">
+    <h3><span class="num">18</span>Prefrontal cortex</h3>
+    <ul>
+      <li>Supports cognitive functions that can underlie personality, short-term memory and consciousness.<sup><a href="#s1">1</a></sup></li>
+      <li><span class="new">2024</span>Works as a partner of the mediodorsal thalamus (T14), with which it is connected in both directions, for executive control.<sup><a href="#s10">10</a></sup></li>
+    </ul>
+  </div>
+  <div class="entry">
+    <h3><span class="num">19</span>Parietal lobe</h3>
+    <ul>
+      <li>Contains the primary somatosensory cortex (Brodmann areas 1–3): touch, pressure, tickle, pain, itch and vibration, plus the sense of body position and movement.<sup><a href="#s1">1</a></sup></li>
+      <li>Also helps process complex visual information.<sup><a href="#s1">1</a></sup></li>
+    </ul>
+  </div>
+  <div class="entry">
+    <h3><span class="num">20</span>Occipital lobe</h3>
+    <ul>
+      <li>Brodmann areas 17 and 18 carry out primary visual perception.<sup><a href="#s1">1</a></sup></li>
+      <li>Receives visual input relayed by the lateral geniculate nucleus (T2).<sup><a href="#s2">2</a></sup></li>
+    </ul>
+  </div>
+  <div class="entry">
+    <h3><span class="num">21</span>Temporal lobe</h3>
+    <ul>
+      <li>Primary hearing sits in Brodmann areas 41 and 42.<sup><a href="#s1">1</a></sup></li>
+      <li>Its limbic parts establish long-term memories.<sup><a href="#s1">1</a></sup></li>
+      <li>Receives auditory input relayed by the medial geniculate nucleus (T6).<sup><a href="#s2">2</a></sup></li>
+    </ul>
+  </div>
+  <div class="entry">
+    <h3><span class="num">15</span>Corpus callosum</h3>
+    <ul>
+      <li>The white-matter bridge that is the main communication route between the two hemispheres.<sup><a href="#s1">1</a></sup></li>
+    </ul>
+  </div>
+</section>
+
+<!-- LIMBIC -->
+<section class="zone z-limbic" id="limbic">
+  <h2>Limbic system</h2>
+  <p class="zone-intro">A group of structures involved in emotion, memory and behaviour. It is no longer thought to be the only emotion system in the brain.<sup><a href="#s6">6</a></sup></p>
+  <div class="entry">
+    <h3><span class="num">16</span>Cingulate gyrus</h3>
+    <ul>
+      <li>A paired structure on the inner surface of each hemisphere, best known as part of the limbic system.<sup><a href="#s4">4</a></sup></li>
+      <li>Connects with reward centres, the amygdala, lateral prefrontal and parietal cortex, motor areas, the spinal cord and the hippocampus.<sup><a href="#s4">4</a></sup></li>
+      <li>Its links with the hippocampus and amygdala suggest roles in consolidating long-term memory and processing emotional stimuli.<sup><a href="#s4">4</a></sup></li>
+    </ul>
+  </div>
+  <div class="entry">
+    <h3><span class="num">27</span>Septal region</h3>
+    <ul>
+      <li>A small area in the medial wall of the hemisphere, extending into the base of the septum pellucidum.<sup><a href="#s8">8</a></sup></li>
+      <li>Receives input from the hippocampus (via the fornix), the amygdala, the ventral tegmental area and the hypothalamus.<sup><a href="#s8">8</a></sup></li>
+      <li>Animal work links it to reward; human clinical evidence is limited, though rage behaviour has been reported in a few patients with midline strokes here.<sup><a href="#s8">8</a></sup></li>
+      <li>The medial septum modulates learning and memory through its projections to the hippocampus; the lateral septum has been linked to social behaviour, anxiety and fear.<sup><a href="#s9">9</a></sup></li>
+    </ul>
+  </div>
+  <div class="entry">
+    <h3><span class="num">25</span>Mammillary bodies</h3>
+    <ul>
+      <li>A core node of the Papez circuit: the hippocampus reaches them via the fornix, and they project to the anterior thalamic nuclei (T5).<sup><a href="#s7">7</a></sup></li>
+      <li>Important for consolidating memory; lesions cause major cognitive deficits.<sup><a href="#s7">7</a></sup></li>
+      <li>Damaged in thiamine (vitamin B1) deficiency, causing Korsakoff amnesia.<sup><a href="#s11">11</a></sup></li>
+    </ul>
+  </div>
+  <div class="entry">
+    <h3><span class="num">3</span>Amygdala</h3>
+    <ul>
+      <li>An almond-shaped group of about 13 nuclei in the temporal lobe, under the uncus, sorted into five functional groups.<sup><a href="#s5">5</a></sup></li>
+      <li>Involved in emotion, behaviour and forming memories; it links prefrontal-temporal cortex with the hypothalamus.<sup><a href="#s5">5</a></sup></li>
+    </ul>
+  </div>
+  <div class="entry">
+    <h3><span class="num">23</span>Hippocampus</h3>
+    <ul>
+      <li>With the amygdala and nearby cortex, forms long-term memories and emotional responses.<sup><a href="#s1">1</a></sup></li>
+      <li><span class="new">2025</span>Dividing neural progenitor cells were found in the dentate gyrus of adults, confirming ongoing neuron formation; numbers varied widely between people.<sup><a href="#s13">13</a></sup></li>
+    </ul>
+  </div>
+</section>
+
+<!-- BASAL -->
+<section class="zone z-basal" id="basal">
+  <h2>Basal ganglia</h2>
+  <p class="zone-intro">Deep nuclei that compare cortical activity with the body's overall state to decide whether a movement goes ahead.<sup><a href="#s1">1</a></sup></p>
+  <div class="entry">
+    <h3><span class="num">8</span><span class="num">9</span>Caudate nucleus, head and tail</h3>
+    <ul>
+      <li>A long, C-shaped nucleus running from the frontal lobe into the temporal lobe; the head is at the front and the tail curves down into the temporal lobe.<sup><a href="#s1">1</a></sup></li>
+      <li>With the putamen, it forms the striatum, which receives all cortical input to the basal ganglia.<sup><a href="#s1">1</a></sup></li>
+    </ul>
+  </div>
+  <div class="entry">
+    <h3><span class="num">7</span>Putamen</h3>
+    <ul>
+      <li>Lies deep under the front parts of the frontal and parietal lobes and is part of the striatum.<sup><a href="#s1">1</a></sup></li>
+    </ul>
+  </div>
+  <div class="entry">
+    <h3><span class="num">5</span>Globus pallidus</h3>
+    <ul>
+      <li>Sits just medial to the putamen and has an external and an internal segment.<sup><a href="#s1">1</a></sup></li>
+      <li>In the direct pathway, the striatum inhibits the internal segment, which releases the thalamus and increases cortical activity.<sup><a href="#s1">1</a></sup></li>
+    </ul>
+  </div>
+  <div class="entry">
+    <h3><span class="num">4</span>Subthalamic nucleus</h3>
+    <ul>
+      <li>A relay in the indirect pathway (striatum → external globus pallidus → subthalamic nucleus → internal globus pallidus / substantia nigra), which keeps the thalamus inhibited.<sup><a href="#s1">1</a></sup></li>
+      <li>Sends excitatory glutamate signals to the internal globus pallidus and substantia nigra.<sup><a href="#s3">3</a></sup></li>
+    </ul>
+  </div>
+  <div class="entry">
+    <h3><span class="num">6</span>Substantia nigra</h3>
+    <ul>
+      <li>The pars compacta releases dopamine into the striatum and acts as the switch between the direct and indirect pathways.<sup><a href="#s1">1</a></sup></li>
+      <li>Parkinson's disease results from these dopamine neurons dying.<sup><a href="#s1">1</a></sup></li>
+    </ul>
+  </div>
+</section>
+
+<!-- DIENCEPHALON -->
+<section class="zone z-dien" id="dien">
+  <h2>Diencephalon</h2>
+  <p class="zone-intro">The connection between the cerebrum and the rest of the nervous system; its two main parts are the thalamus and hypothalamus.<sup><a href="#s1">1</a></sup></p>
+  <div class="entry">
+    <h3><span class="num">1</span>Thalamus</h3>
+    <ul>
+      <li>Every sense except smell passes through it before reaching the cortex, and it processes that information rather than just passing it on.<sup><a href="#s1">1</a></sup></li>
+      <li>Has about 60 nuclei; see the thalamus section below for the ones on your chart.<sup><a href="#s2">2</a></sup></li>
+    </ul>
+  </div>
+  <div class="entry">
+    <h3><span class="num">2</span>Hypothalamus</h3>
+    <ul>
+      <li>Regulates homeostasis and directs the autonomic and endocrine systems through the anterior pituitary; parts of it are involved in memory and emotion.<sup><a href="#s1">1</a></sup></li>
+      <li><span class="new">2025</span>The HYPOMAP atlas charted over 450 cell types in the human hypothalamus, which controls sleep, body temperature, hunger and thirst, and showed differences from mice that matter for obesity drugs.<sup><a href="#s16">16</a></sup></li>
+    </ul>
+  </div>
+</section>
+
+<!-- BRAIN STEM -->
+<section class="zone z-stem" id="stem">
+  <h2>Brain stem</h2>
+  <div class="entry">
+    <h3><span class="num">12</span>Brain stem, overall</h3>
+    <ul>
+      <li>Made up of the midbrain, pons and medulla; it connects the brain to the spinal cord.<sup><a href="#s1">1</a></sup></li>
+      <li>The cranial nerves connect here, and the main pathways between spinal cord and brain pass through it.<sup><a href="#s1">1</a></sup></li>
+      <li><span class="new">2024</span>A wakefulness network with nodes in the brain stem, hypothalamus, thalamus and basal forebrain was mapped in human brains.<sup><a href="#s15">15</a></sup></li>
+    </ul>
+  </div>
+  <div class="entry">
+    <h3><span class="num">14</span>Midbrain</h3>
+    <ul>
+      <li>The superior colliculus combines visual, auditory and body-space information to orient the eyes; the inferior colliculus is part of the hearing pathway.<sup><a href="#s1">1</a></sup></li>
+      <li><span class="new">2024</span>Its dopamine-producing ventral tegmental area is a hub linking the wakefulness network to the cortical default mode network.<sup><a href="#s15">15</a></sup></li>
+    </ul>
+  </div>
+  <div class="entry">
+    <h3><span class="num">11</span>Pons</h3>
+    <ul>
+      <li>The main connection between the brain stem and cerebellum; it passes descending forebrain input on to the cerebellum.<sup><a href="#s1">1</a></sup></li>
+      <li>Together with the medulla, regulates heart and breathing rates.<sup><a href="#s1">1</a></sup></li>
+    </ul>
+  </div>
+  <div class="entry">
+    <h3><span class="num">13</span>Medulla</h3>
+    <ul>
+      <li>Its outer white matter is continuous with the spinal cord, and its grey matter processes cranial nerve information.<sup><a href="#s1">1</a></sup></li>
+      <li>The reticular formation running through the brain stem relates to sleep, wakefulness and attention.<sup><a href="#s1">1</a></sup></li>
+    </ul>
+  </div>
+</section>
+
+<!-- CEREBELLUM -->
+<section class="zone z-cereb" id="cereb">
+  <h2>Cerebellum</h2>
+  <div class="entry">
+    <h3><span class="num">10</span>Cerebellum</h3>
+    <ul>
+      <li>Compares the cerebrum's motor commands with sensory feedback and sends corrections when a movement is off; about 10% of brain mass.<sup><a href="#s1">1</a></sup></li>
+      <li>The anterior lobe mainly handles sensorimotor processing; the posterior lobe supports cognition and emotion.<sup><a href="#s14">14</a></sup></li>
+      <li>Posterior lobe damage causes the cerebellar cognitive affective syndrome, affecting executive function, visuospatial processing, language and emotional regulation.<sup><a href="#s14">14</a></sup></li>
+    </ul>
+  </div>
+</section>
+
+<!-- THALAMUS NUCLEI -->
+<section class="zone z-thal" id="thalamus">
+  <h2>Thalamus nuclei</h2>
+  <p class="zone-intro">T numbers match the Thalamus panel of your chart. Each side of the thalamus has anterior, medial and lateral groups separated by the internal medullary lamina, plus thin midline nuclei and an outer reticular nucleus.<sup><a href="#s2">2</a></sup></p>
+
+  <div class="entry"><h3><span class="num">T5</span>Anterior nuclear group</h3><ul>
+    <li>Receives the mammillary bodies' output as part of the Papez circuit.<sup><a href="#s7">7</a></sup></li>
+    <li>Considered critical for episodic memory in humans.<sup><a href="#s11">11</a></sup></li>
+  </ul></div>
+
+  <div class="entry"><h3><span class="num">T14</span>Medial dorsal (mediodorsal)</h3><ul>
+    <li>Connected both ways with all areas of the prefrontal cortex; a 2024 review assigns it a specific role in executive control.<sup><a href="#s10">10</a></sup></li>
+    <li>Causally involved in fast learning, working memory and adaptive decisions in primates and rodents.<sup><a href="#s10">10</a></sup></li>
+  </ul></div>
+
+  <div class="entry"><h3><span class="num">T13</span>Midline nuclei</h3><ul>
+    <li>Thin nuclei next to the third ventricle, including the paraventricular, parataenial and rhomboid nuclei.<sup><a href="#s2">2</a></sup></li>
+    <li class="gap">Their functions aren't detailed in the sources used here.</li>
+  </ul></div>
+
+  <div class="entry"><h3><span class="num">T9</span>Intralaminar nuclear group</h3><ul>
+    <li>Sit inside the lamina; they take input from the basal ganglia and project to the cortex.<sup><a href="#s2">2</a></sup></li>
+    <li>The central medial nucleus in this group handles alertness, motor information, consciousness and awareness.<sup><a href="#s2">2</a></sup></li>
+  </ul></div>
+
+  <div class="entry"><h3><span class="num">T7</span>Centromedian</h3><ul>
+    <li>One of the caudal intralaminar nuclei.<sup><a href="#s2">2</a></sup></li>
+    <li class="gap">Its specific function isn't detailed in the sources used here.</li>
+  </ul></div>
+
+  <div class="entry"><h3><span class="num">T8</span>Reticular nucleus</h3><ul>
+    <li>Wraps around the lateral thalamus and projects back onto the thalamus rather than to the cortex, regulating its activity.<sup><a href="#s2">2</a></sup></li>
+    <li>Receives input from the reticular activating system and basal forebrain, giving the thalamus a role in alertness and attention.<sup><a href="#s2">2</a></sup></li>
+  </ul></div>
+
+  <div class="entry"><h3><span class="num">T3</span><span class="num">T10</span>Lateral dorsal and lateral posterior</h3><ul>
+    <li>Both belong to the lateral nuclear group of relay nuclei.<sup><a href="#s2">2</a></sup></li>
+    <li class="gap">Their specific functions aren't detailed in the sources used here.</li>
+  </ul></div>
+
+  <div class="entry"><h3><span class="num">T1</span>Pulvinar</h3><ul>
+    <li>The largest thalamic nucleus, strongly connected with visual cortex and part of the visual attention network; visual salience is likely one of its main functions.<sup><a href="#s17">17</a></sup></li>
+    <li>One-sided pulvinar damage can cause neglect of the opposite side of space.<sup><a href="#s17">17</a></sup></li>
+    <li><span class="new">2023</span>A review describes it as a hub for attentional modulation, feature binding and predictive coding.<sup><a href="#s18">18</a></sup></li>
+  </ul></div>
+
+  <div class="entry"><h3><span class="num">T4</span>Ventral anterior</h3><ul>
+    <li>Part of the lateral nuclear group.<sup><a href="#s2">2</a></sup></li>
+    <li class="gap">Its specific function isn't detailed in the sources used here.</li>
+  </ul></div>
+
+  <div class="entry"><h3><span class="num">T11</span>Ventral lateral</h3><ul>
+    <li>Receives input from the cerebellum and basal ganglia and sends motor information to the motor cortex.<sup><a href="#s2">2</a></sup></li>
+  </ul></div>
+
+  <div class="entry"><h3><span class="num">T16</span>Ventral intermedial</h3><ul>
+    <li class="gap">Not covered in the sources used here.</li>
+  </ul></div>
+
+  <div class="entry"><h3><span class="num">T15</span>Ventral posterolateral (VPL)</h3><ul>
+    <li>Relays body temperature and pain, vibration, pressure, fine touch and proprioception to the somatosensory cortex.<sup><a href="#s2">2</a></sup></li>
+  </ul></div>
+
+  <div class="entry"><h3><span class="num">T12</span>Ventral posteromedial (VPM)</h3><ul>
+    <li>Relays facial sensation and taste to the somatosensory cortex.<sup><a href="#s2">2</a></sup></li>
+  </ul></div>
+
+  <div class="entry"><h3><span class="num">T2</span>Lateral geniculate body</h3><ul>
+    <li>Receives input from the optic tracts and sends it on to the primary visual cortex in the occipital lobe.<sup><a href="#s2">2</a></sup></li>
+  </ul></div>
+
+  <div class="entry"><h3><span class="num">T6</span>Medial geniculate body</h3><ul>
+    <li>Relays hearing from the superior olive and inferior colliculus to the auditory cortex of the temporal lobe.<sup><a href="#s2">2</a></sup></li>
+  </ul></div>
+</section>
+
+<section class="refs" id="refs">
+  <h2>Sources</h2>
+  <ol>
+    <li id="s1">Betts JG et al. <em>Anatomy and Physiology</em>, section 13.2, The Central Nervous System. OpenStax. Access for free at <a href="https://openstax.org/books/anatomy-and-physiology/pages/1-introduction">openstax.org/books/anatomy-and-physiology</a>; section: <a href="https://openstax.org/books/anatomy-and-physiology/pages/13-2-the-central-nervous-system">13.2</a></li>
+    <li id="s2">Sheridan N, Tadi P. Neuroanatomy, Thalamic Nuclei. StatPearls, updated 2023. <a href="https://www.ncbi.nlm.nih.gov/books/NBK549908/">NBK549908</a></li>
+    <li id="s3">Neuroanatomy, Basal Ganglia. StatPearls. <a href="https://ncbi.nlm.nih.gov/books/NBK537141/">NBK537141</a></li>
+    <li id="s4">Neuroanatomy, Cingulate Cortex. StatPearls. <a href="https://www.ncbi.nlm.nih.gov/books/NBK537077/">NBK537077</a></li>
+    <li id="s5">Neuroanatomy, Amygdala. StatPearls, 2023. <a href="https://www.ncbi.nlm.nih.gov/books/NBK537102/">NBK537102</a></li>
+    <li id="s6">Torrico TJ, Abdijadid S. Neuroanatomy, Limbic System. StatPearls, 2023. <a href="https://www.ncbi.nlm.nih.gov/books/NBK538491/">NBK538491</a></li>
+    <li id="s7">Neuroanatomy, Mammillary Bodies. StatPearls. <a href="https://www.ncbi.nlm.nih.gov/books/NBK537192/">NBK537192</a></li>
+    <li id="s8">Septal Nuclei, overview. ScienceDirect Topics (Elsevier). <a href="https://www.sciencedirect.com/topics/neuroscience/septal-nuclei">sciencedirect.com/topics/neuroscience/septal-nuclei</a></li>
+    <li id="s9">Systems Genetics of the Lateral Septal Nucleus in Mouse. PLoS ONE (PMC3432065). <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3432065/">PMC3432065</a></li>
+    <li id="s10">The mediodorsal thalamus in executive control. <em>Neuron</em>, 2024. <a href="https://www.cell.com/neuron/fulltext/S0896-6273(24)00002-3">cell.com/neuron</a>; and Ouhaz Z, Fleming H, Mitchell AS. <em>Front Neurosci</em>, 2018. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5808198/">PMC5808198</a></li>
+    <li id="s11">Papez Circuit, overview. ScienceDirect Topics (Elsevier). <a href="https://www.sciencedirect.com/topics/neuroscience/papez-circuit">sciencedirect.com/topics/neuroscience/papez-circuit</a></li>
+    <li id="s12">Gordon EM et al. A somato-cognitive action network alternates with effector regions in motor cortex. <em>Nature</em> 617:351–359, 2023. <a href="https://www.nature.com/articles/s41586-023-05964-2">doi:10.1038/s41586-023-05964-2</a>; open critique: <a href="https://www.diedrichsenlab.org/BrainDataScience/or_gordon2023/index.htm">Diedrichsen lab</a></li>
+    <li id="s13">Dumitru I et al. Identification of proliferating neural progenitors in the adult human hippocampus. <em>Science</em>, 2025. <a href="https://www.science.org/doi/10.1126/science.adu9575">doi:10.1126/science.adu9575</a>; <a href="https://news.ki.se/new-research-confirms-that-neurons-form-in-the-adult-brain">Karolinska Institutet summary</a></li>
+    <li id="s14">Schmahmann JD. The cerebellum and cognition. <em>Neurosci Lett</em>, 2019. <a href="https://www.sciencedirect.com/science/article/abs/pii/S0304394018304671">sciencedirect.com</a></li>
+    <li id="s15">Edlow BL et al. Multimodal MRI reveals brainstem connections that sustain wakefulness in human consciousness. <em>Sci Transl Med</em> 16(745), 2024. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11870092/">PMC11870092</a></li>
+    <li id="s16">Tadross JA et al. A comprehensive spatio-cellular map of the human hypothalamus. <em>Nature</em>, 2025. <a href="https://www.nature.com/articles/s41586-024-08504-8">doi:10.1038/s41586-024-08504-8</a>; <a href="https://www.mpg.de/24100300/cell-atlas-of-the-human-hypothalamus">Max Planck summary</a></li>
+    <li id="s17">Pulvinar. <em>Neurology</em>, 2015. <a href="https://www.neurology.org/doi/10.1212/WNL.0000000000001276">doi:10.1212/WNL.0000000000001276</a></li>
+    <li id="s18">The pulvinar as a hub of visual processing and cortical integration. <em>Trends in Neurosciences</em>, 2023. <a href="https://www.cell.com/trends/neurosciences/fulltext/S0166-2236(23)00270-9">cell.com/trends/neurosciences</a></li>
+  </ol>
+</section>
+</main>
+</body>
+</html>
