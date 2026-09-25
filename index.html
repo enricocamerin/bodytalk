@@ -191,9 +191,13 @@
   .tray-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;}
   .tray-title{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--text-3);
     text-transform:uppercase;letter-spacing:.18em;}
-  .tray-btns{display:flex;gap:6px;}
+  .tray-btns{display:flex;gap:6px;min-width:0;overflow-x:auto;scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;padding:2px;}
+  .tray-btns::-webkit-scrollbar{display:none;}
+  .tray-title{flex-shrink:0;}
   .mini{background:transparent;border:1px solid var(--edge-2);color:var(--text-2);
-    border-radius:99px;padding:6px 13px;font-size:11.5px;cursor:pointer;font-family:inherit;font-weight:500;}
+    border-radius:99px;padding:6px 13px;font-size:11.5px;cursor:pointer;font-family:inherit;font-weight:500;
+    white-space:nowrap;flex-shrink:0;}
   .mini.go{background:var(--text);border-color:var(--text);color:var(--void);font-weight:600;}
   .mini:disabled{opacity:.26;}
   .f-label{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-3);
@@ -348,6 +352,44 @@
     cursor:pointer;font-family:inherit;margin-top:20px;text-decoration:underline;}
 
   ::selection{background:rgba(61,220,151,.25);}
+
+  /* ---------- search ---------- */
+  .search{position:relative;margin-top:10px;}
+  .search input{margin:0;padding:11px 40px 11px 38px;font-size:15px;border-radius:99px;}
+  .search input::-webkit-search-cancel-button{display:none;}
+  .search .s-ico{position:absolute;left:15px;top:50%;transform:translateY(-50%);
+    width:12px;height:12px;border:1.5px solid var(--text-3);border-radius:50%;pointer-events:none;}
+  .search .s-ico::after{content:"";position:absolute;width:6px;height:1.5px;background:var(--text-3);
+    right:-5px;bottom:-2px;transform:rotate(45deg);}
+  .search .s-clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);
+    width:32px;height:32px;border-radius:50%;border:none;background:none;color:var(--text-3);
+    font-size:18px;cursor:pointer;font-family:inherit;}
+  .r-sub{color:var(--text-2);font-size:14px;font-weight:300;margin-top:8px;}
+  .results{margin-top:18px;display:flex;flex-direction:column;gap:8px;}
+  .res{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--edge);
+    border-radius:14px;padding:11px 11px 11px 14px;cursor:pointer;transition:.16s;}
+  .res:active{background:var(--card-hi);}
+  .res.kb{border-color:var(--em);}
+  .res .r-main{flex:1;min-width:0;}
+  .res .r-name{font-size:15px;line-height:1.3;}
+  .res .r-path{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--text-3);
+    letter-spacing:.06em;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .res .c-add{width:34px;height:34px;font-size:21px;}
+  mark{background:rgba(61,220,151,.22);color:inherit;border-radius:3px;padding:0 1px;}
+
+  /* ---------- keyboard + motion ---------- */
+  :focus-visible{outline:2px solid var(--em);outline-offset:2px;}
+  .card:focus-visible,.res:focus-visible{outline-offset:3px;}
+  input:focus-visible,textarea:focus-visible{outline:none;border-color:var(--em);}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+  @media (hover:hover){
+    .card:hover,.res:hover{background:var(--card-hi);border-color:var(--edge-2);}
+    .c-add:hover{background:rgba(61,220,151,.14);}
+    .nav button:hover,.mini:not(:disabled):hover{border-color:var(--text-3);}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{transition:none!important;animation:none!important;}
+  }
 </style>
 </head>
 <body>
@@ -363,6 +405,14 @@
       </div>
     </div>
     <div class="crumbs" id="crumbs"></div>
+    <div class="search" id="searchBox">
+      <span class="s-ico" aria-hidden="true"></span>
+      <label class="sr" for="q">Search the protocol</label>
+      <input id="q" type="search" placeholder="Search nodes · liver, 3.2, fegato"
+             autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go"
+             oninput="onSearch(this.value)" onkeydown="searchKey(event)">
+      <button class="s-clear" id="qClear" aria-label="Clear search" onclick="clearSearch()" hidden>&times;</button>
+    </div>
   </header>
 
   <main id="main"><div class="loading">Loading protocol</div></main>
@@ -381,8 +431,8 @@
   </div>
 </div>
 
-<button class="mic" id="mic" onclick="toggleVoice()">●</button>
-<div class="heard" id="heard"></div>
+<button class="mic" id="mic" onclick="toggleVoice()" aria-label="Voice commands" aria-pressed="false">●</button>
+<div class="heard" id="heard" role="status" aria-live="polite"></div>
 <div class="cands" id="cands"></div>
 
 <script>
@@ -400,7 +450,7 @@ let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={},QUALS=[],KW={},ENTRY={},
 let current=null, view="browse";
 let detailTab="";   /* 'specific' | 'orientation' | 'photo' */
 let NODES=[];        /* {id,parentId,branch,code,name} */
-const BUILD = "step1-types";   /* shown in the header so the loaded version is never in doubt */
+const BUILD = "search-a11y";   /* shown in the header so the loaded version is never in doubt */
 let activeId=null;   /* where the next pick attaches */
 let pendingBranch=false;   /* next pick opens a declared sub-formula */
 let segment="protocol";    /* 'acim' while the forgiveness part is open */
@@ -412,6 +462,9 @@ let nid=0;
 function newId(){ return "n"+(++nid); }
 function childrenOfNode(pid){ return NODES.filter(function(n){return n.parentId===pid;}); }
 function nodeById(id){ return NODES.find(function(n){return n.id===id;}); }
+/* text typed by the user (titles, notes, speech) is escaped before it reaches innerHTML */
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); }
 
 const HUE={ "0":"#7DD3C0","1":"#3DDC97","2":"#5EEAD4","3":"#FBBF24","4":"#FB923C","5":"#A78BFA","6":"#F87171" };
 function hueOf(c){ return HUE[c.split(".")[0]]||"#7DD3C0"; }
@@ -658,7 +711,11 @@ function clearAll(){
   groupSeq=0; parcelMode=false; parcelId=null; render(); renderTray();
 }
 
-function go(code){
+function go(code,fromHistory){
+  if(searchQ) clearSearch(true);
+  if(!fromHistory && code!==current){
+    try{ history.pushState({code:code},"",code?"#"+code:location.pathname+location.search); }catch(e){}
+  }
   current=code; view="browse";
   /* open the children by default; otherwise nothing is pre-opened */
   detailTab = kids(code).length ? "specific" : "";
@@ -866,7 +923,7 @@ function kidsGridHTML(ch, wide){
   ch.forEach(function(k){
     const n=kids(k.code).length, lk=linksOf(k.code).length>0;
     const isEntry = !!ENTRY[k.code];
-    h+='<div class="card'+(wide?" wide":"")+'" onclick="go(&#39;'+k.code+'&#39;)">' +
+    h+='<div class="card'+(wide?" wide":"")+'" role="button" tabindex="0" onclick="go(&#39;'+k.code+'&#39;)">' +
        '<div class="c-accent" style="background:'+(isEntry?"var(--em)":hueOf(k.code))+';'+
        (isEntry?"width:5px;":"")+'"></div>';
     if(wide){
@@ -877,7 +934,7 @@ function kidsGridHTML(ch, wide){
       h+='<div class="c-code">'+k.code+'</div><div class="c-name">'+k.name+'</div>' +
          '<div class="c-foot">' +
          (n?'<span class="c-count">'+n+' inside</span>':(lk?'<span class="c-leaf">description</span>':'<span></span>')) +
-         '<button class="c-add" onclick="addPick(&#39;'+k.code+'&#39;,event)">+</button>' +
+         '<button class="c-add" aria-label="Add '+k.code+' to the formula" onclick="addPick(&#39;'+k.code+'&#39;,event)">+</button>' +
          '</div>';
     }
     h+='</div>';
@@ -890,9 +947,11 @@ function render(){
   const m=document.getElementById("main");
   document.getElementById("tray").style.display = view==="log" ? "none" : "";
   document.getElementById("crumbs").style.display = view==="log" ? "none" : "";
+  document.getElementById("searchBox").style.display = view==="log" ? "none" : "";
   if(view==="log"){ renderLog(); return; }
 
   renderCrumbs();
+  if(searchQ){ renderSearch(); return; }
   const node=current?byCode[current]:null;
   const ch=kids(current);
   let h="";
@@ -904,7 +963,7 @@ function render(){
     h+='<div class="nav">' +
        '<button onclick="go('+(upCode?"&#39;"+upCode+"&#39;":"null")+')">' +
          '<span class="g">\u2190</span><span>'+short2(upName)+'</span></button>' +
-       '<button class="home" onclick="go(null)"><span class="g">\u2302</span></button>' +
+       '<button class="home" aria-label="Protocol home" onclick="go(null)"><span class="g">\u2302</span></button>' +
        '</div>';
   }
   const ep = node ? ENTRY[node.code] : null;
@@ -974,12 +1033,12 @@ function render(){
     items.forEach(function(it){
       const sub=kids(it.code).length;
       const act = sub ? 'go(&#39;'+it.code+'&#39;)' : 'addPick(&#39;'+it.code+'&#39;)';
-      h+='<div class="card" onclick="'+act+'">' +
+      h+='<div class="card" role="button" tabindex="0" onclick="'+act+'">' +
          '<div class="c-accent" style="background:var(--em)"></div>' +
          '<div class="c-name">'+it.name+'</div>' +
          '<div class="c-foot">' +
          (sub?'<span class="c-count">'+sub+' inside</span>':'<span></span>') +
-         '<button class="c-add" onclick="addPick(&#39;'+it.code+'&#39;,event)">+</button>' +
+         '<button class="c-add" aria-label="Add '+it.code+' to the formula" onclick="addPick(&#39;'+it.code+'&#39;,event)">+</button>' +
          '</div></div>';
     });
     h+='</div>';
@@ -1005,13 +1064,13 @@ function render(){
       const tl=lkOfTable(it.code,"dim_tentacle");
       const td=tl?TT[tl.code]:null;
       const warn=td&&td.accent==="warn";
-      h+='<div class="card'+(warn?" warn":"")+'" onclick="go(&#39;'+it.code+'&#39;)">' +
+      h+='<div class="card'+(warn?" warn":"")+'" role="button" tabindex="0" onclick="go(&#39;'+it.code+'&#39;)">' +
          '<div class="c-accent" style="background:'+(warn?"#FBBF24":"var(--em)")+'"></div>' +
          '<div class="c-code">'+it.code+'</div><div class="c-name">'+it.name+'</div>' +
          (warn&&td.note?'<div class="c-warn">'+td.note+'</div>':'') +
          '<div class="c-foot">' +
          (sub?'<span class="c-count">'+sub+' inside</span>':'<span></span>') +
-         '<button class="c-add" onclick="addPick(&#39;'+it.code+'&#39;,event)">+</button>' +
+         '<button class="c-add" aria-label="Add '+it.code+' to the formula" onclick="addPick(&#39;'+it.code+'&#39;,event)">+</button>' +
          '</div></div>';
     });
     h+='</div>';
@@ -1028,6 +1087,98 @@ function render(){
   }
 
   m.innerHTML=h;
+}
+
+/* ---------- search ---------- */
+let searchQ="", searchHits=[], searchSel=-1, searchWords=[];
+function onSearch(v){
+  searchQ=v.trim();
+  document.getElementById("qClear").hidden = !v;
+  searchSel=-1;
+  render();
+}
+function clearSearch(silent){
+  searchQ=""; searchHits=[]; searchSel=-1;
+  const q=document.getElementById("q"); q.value="";
+  document.getElementById("qClear").hidden=true;
+  if(!silent){ render(); q.focus(); }
+}
+function searchKey(e){
+  if(e.key==="Escape"){ clearSearch(); return; }
+  if(!searchHits.length) return;
+  if(e.key==="ArrowDown"||e.key==="ArrowUp"){
+    e.preventDefault();
+    const n=searchHits.length;
+    searchSel = e.key==="ArrowDown" ? (searchSel+1)%n : (searchSel<=0?n-1:searchSel-1);
+    document.querySelectorAll(".res").forEach(function(el,i){ el.classList.toggle("kb",i===searchSel); });
+    const el=document.querySelectorAll(".res")[searchSel]; if(el) el.scrollIntoView({block:"nearest"});
+  } else if(e.key==="Enter"){
+    e.preventDefault();
+    const hit=searchHits[Math.max(searchSel,0)];
+    if(hit){ document.getElementById("q").blur(); go(hit.code); }
+  }
+}
+/* matches the code ("3.2"), English names and the Italian aliases used by voice */
+function searchNodes(raw){
+  const t=norm(raw);
+  if(!t) return [];
+  let q=t;
+  Object.keys(ALIASES).sort(function(a,b){return b.length-a.length;}).forEach(function(it){
+    if(new RegExp("\\b"+it+"\\b").test(q)) q=q.replace(it,ALIASES[it]);
+  });
+  const words=q.split(" ").filter(Boolean);
+  searchWords=words;
+  const isCode=/^[0-9.]+$/.test(t);
+  const out=[];
+  TREE.forEach(function(n){
+    const nm=norm(n.name);
+    let s=0;
+    if(isCode){
+      if(n.code===t) s=100;
+      else if(n.code.indexOf(t)===0) s=60-n.code.length;
+      else return;
+    } else {
+      if(!words.every(function(w){ return nm.indexOf(w)>=0; })) return;
+      s=20;
+      if(nm===q) s+=60;
+      if(nm.indexOf(q)===0) s+=25;
+      words.forEach(function(w){ if(new RegExp("(^|[^a-z])"+w).test(nm)) s+=8; });
+      s-=n.code.split(".").length*1.5 + nm.length*0.05;
+    }
+    out.push({n:n,s:s});
+  });
+  out.sort(function(a,b){ return b.s-a.s || natSort(a.n,b.n); });
+  return out.slice(0,40).map(function(x){ return x.n; });
+}
+function hl(name){
+  const words=searchWords.filter(function(w){return w.length>1;});
+  let h=esc(name);
+  words.forEach(function(w){
+    if(/^(amp|lt|gt|quot|39)$/.test(w)) return;   /* never split an escaped entity */
+    h=h.replace(new RegExp("("+w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","ig"),"<mark>$1</mark>");
+  });
+  return h;
+}
+function renderSearch(){
+  const m=document.getElementById("main");
+  searchHits=searchNodes(searchQ);
+  let h='<div class="eyebrow">Search</div><h1>'+(searchHits.length||"No")+' match'+(searchHits.length===1?"":"es")+'</h1>' +
+        '<div class="r-sub">for \u201C'+esc(searchQ)+'\u201D'+(searchHits.length===40?' \u00B7 first 40 shown':'')+'</div>';
+  if(!searchHits.length){
+    h+='<div class="note">Nothing in the protocol matches. Try a shorter word, an English name, or a code such as 3.2.</div>';
+    m.innerHTML=h; return;
+  }
+  h+='<div class="results">';
+  searchHits.forEach(function(n,i){
+    const path=ancestors(n.code).slice(0,-1).map(function(a){return a.name;}).join(" / ");
+    h+='<div class="res'+(i===searchSel?" kb":"")+'" role="button" tabindex="0" onclick="go(&#39;'+n.code+'&#39;)">' +
+       '<div class="c-accent" style="position:static;width:3px;align-self:stretch;border-radius:3px;background:'+hueOf(n.code)+'"></div>' +
+       '<div class="r-main"><div class="r-name">'+hl(n.name)+'</div>' +
+       '<div class="r-path">'+n.code+(path?' \u00B7 '+esc(path):'')+'</div></div>' +
+       '<button class="c-add" aria-label="Add '+n.code+' to the formula" onclick="addPick(&#39;'+n.code+'&#39;,event)">+</button>' +
+       '</div>';
+  });
+  m.innerHTML=h+'</div>';
 }
 
 function renderCrumbs(){
@@ -1181,7 +1332,7 @@ function chipHTML(nd){
   return '<span class="chip'+(here?" here":"")+(inParcel?" sel":"")+'" data-chip="'+nd.id+'" ' +
     'onclick="'+act+'">' +
     '<span class="cc">'+nd.code+'</span>'+short(nd.name)+
-    (parcelMode?'':'<span class="x" onclick="removeNode(&#39;'+nd.id+'&#39;)">\u00D7</span>')+
+    (parcelMode?'':'<span class="x" role="button" aria-label="Remove" onclick="event.stopPropagation();removeNode(&#39;'+nd.id+'&#39;)">\u00D7</span>')+
     '</span>';
 }
 
@@ -1191,11 +1342,22 @@ function openSave(){
   d.className="modal-bg"; d.id="sm";
   d.innerHTML='<div class="modal"><div class="grab"></div><h3>Save session</h3>' +
     '<input id="sT" placeholder="Title" autocomplete="off">' +
-    '<input id="sD" type="date" value="'+new Date().toISOString().slice(0,10)+'">' +
+    '<input id="sD" type="date" value="'+localDate()+'">' +
     '<textarea id="sN" placeholder="Notes"></textarea>' +
     '<div class="mb"><button onclick="closeSave()">Cancel</button>' +
     '<button class="go" onclick="doSave()">Save</button></div></div>';
+  d.addEventListener("click",function(e){ if(e.target===d) closeSave(); });
+  d.addEventListener("keydown",function(e){
+    if(e.key==="Escape") closeSave();
+    if(e.key==="Enter" && e.target.tagName==="INPUT") doSave();
+  });
   document.body.appendChild(d);
+  setTimeout(function(){ const t=document.getElementById("sT"); if(t) t.focus(); },60);
+}
+/* today in local time: toISOString alone gives yesterday's date late in the evening east of UTC */
+function localDate(){
+  const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset());
+  return d.toISOString().slice(0,10);
 }
 function closeSave(){ const m=document.getElementById("sm"); if(m) m.remove(); }
 async function doSave(){
@@ -1241,9 +1403,9 @@ function renderLog(){
   sessions.forEach(function(s){
     const rows=(s.fact_session_step||[]).slice()
       .sort(function(a,b){return a.step_no-b.step_no;});
-    h+='<div class="sess"><div class="sess-top"><div class="sess-t">'+(s.title||"Untitled")+'</div>' +
-       '<div class="sess-d">'+s.session_date+'</div></div>';
-    if(s.notes) h+='<div class="sess-n">'+s.notes+'</div>';
+    h+='<div class="sess"><div class="sess-top"><div class="sess-t">'+esc(s.title||"Untitled")+'</div>' +
+       '<div class="sess-d">'+esc(s.session_date)+'</div></div>';
+    if(s.notes) h+='<div class="sess-n">'+esc(s.notes).replace(/\n/g,"<br>")+'</div>';
     h+='<div class="dgf">'+savedTree(rows,null)+'</div>';
     h+='<div style="margin-top:12px"><button class="del" onclick="delSession(&#39;'+s.id+'&#39;)">Delete</button></div></div>';
   });
@@ -1319,7 +1481,7 @@ function savedChain(rows,node){
 function err(e){
   document.getElementById("dot").classList.add("err");
   document.getElementById("brandText").textContent="Connection failed";
-  document.getElementById("main").innerHTML='<div class="note err"><b>Could not reach the database.</b><br>'+e.message+'</div>';
+  document.getElementById("main").innerHTML='<div class="note err"><b>Could not reach the database.</b><br>'+esc(e.message)+'</div>';
 }
 
 /* ============================================================
@@ -1376,18 +1538,20 @@ function toggleVoice(){
   try{ recog.start(); }catch(x){}
   voiceOn=true;
   document.getElementById("mic").classList.add("live");
+  document.getElementById("mic").setAttribute("aria-pressed","true");
   heard('Listening — say “dettaglio”, a node name, or “aggiungi”');
 }
 function stopVoice(){
   voiceOn=false; hideCands();
   if(recog){ try{recog.stop();}catch(x){} recog=null; }
   document.getElementById("mic").classList.remove("live");
+  document.getElementById("mic").setAttribute("aria-pressed","false");
   hideHeard();
 }
 function heard(msg,bad){
   const el=document.getElementById("heard");
   el.className="heard"+(bad?" bad":"");
-  el.innerHTML='<span class="hl">'+(bad?"Not understood":"Heard")+'</span>'+msg;
+  el.innerHTML='<span class="hl">'+(bad?"Not understood":"Heard")+'</span>'+esc(msg);
   el.style.display="block";
   clearTimeout(el._t); el._t=setTimeout(function(){el.style.display="none";},5000);
 }
@@ -1458,7 +1622,7 @@ function rank(t){
 function showCands(raw,list){
   const el=document.getElementById("cands");
   CANDS=list.slice(0,4).map(function(x){return x.n;});
-  let h='<div class="cl">Which one?</div><div class="cq">“'+raw+'”</div>';
+  let h='<div class="cl">Which one?</div><div class="cq">“'+esc(raw)+'”</div>';
   CANDS.forEach(function(n,i){
     h+='<div class="cand" onclick="pickCand('+i+')"><div class="cn">'+(i+1)+'</div>' +
        '<div><div class="ctn">'+n.name+'</div><div class="ctc">'+n.code+'</div></div></div>';
@@ -1490,11 +1654,30 @@ function detail(code){
 async function boot(){
   try{
     await loadRef();
+    const start=decodeURIComponent(location.hash.slice(1));
+    if(start && byCode[start]){ current=start; detailTab=kids(start).length?"specific":""; }
+    try{ history.replaceState({code:current},""); }catch(e){}
     renderTray(); render();
   }catch(e){
     if(e.message!=="locked") err(e);
   }
 }
+
+window.addEventListener("popstate",function(e){
+  if(!TREE.length) return;
+  const code=(e.state&&e.state.code)||decodeURIComponent(location.hash.slice(1))||null;
+  go(byCode[code]?code:null,true);
+});
+/* Enter / Space open a focused card; "/" jumps to search */
+document.addEventListener("keydown",function(e){
+  const t=e.target;
+  if((e.key==="Enter"||e.key===" ") && t.getAttribute && t.getAttribute("role")==="button" && t.tagName!=="BUTTON"){
+    e.preventDefault(); t.click(); return;
+  }
+  if(e.key==="/" && !/^(INPUT|TEXTAREA)$/.test(t.tagName) && view==="browse"){
+    e.preventDefault(); document.getElementById("q").focus();
+  }
+});
 
 /* start locked unless a code is already remembered on this device */
 if(ACCESS){
