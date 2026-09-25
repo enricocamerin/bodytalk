@@ -47,10 +47,10 @@ the owner writes to Claude in Italian.
 
 ## Current state
 
-- Build `formula-tray` (PR #1): the formula tray at the bottom is a raised
-  panel with an emerald edge, a "Formula" title with a step count, the current
-  step filled in emerald, a pop-in when a step is added, and the mic floating
-  above the tray. Before it: `search-a11y` (node search, back-button history,
-  keyboard access).
+- Build `formula-fold`: the formula tray starts folded to a title bar
+  ("Formula", step count, current step); tapping the title (or saying
+  "mostra/nascondi formula") opens and closes it. While folded, adding a step
+  bumps the count. Before it: `formula-tray` (PR #2: raised tray, emerald
+  edge, current step filled, mic above the tray) and `search-a11y`.
 - Section 1 › Brain (`1.10`) data is in production; the `CHART.*` note bodies
   wait for the owner's chart wording (`sql/brain-chart-notes-fill-in.sql`).
