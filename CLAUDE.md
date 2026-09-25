@@ -47,7 +47,10 @@ the owner writes to Claude in Italian.
 
 ## Current state
 
-- Latest on `main`: build `search-a11y` (node search, back-button history,
+- Build `formula-tray` (PR #1): the formula tray at the bottom is a raised
+  panel with an emerald edge, a "Formula" title with a step count, the current
+  step filled in emerald, a pop-in when a step is added, and the mic floating
+  above the tray. Before it: `search-a11y` (node search, back-button history,
   keyboard access).
 - Section 1 › Brain (`1.10`) data is in production; the `CHART.*` note bodies
   wait for the owner's chart wording (`sql/brain-chart-notes-fill-in.sql`).
