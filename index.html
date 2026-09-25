@@ -201,7 +201,22 @@
   }
   .tray-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
   .tray-title{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;
-    color:var(--text);letter-spacing:-.01em;}
+    color:var(--text);letter-spacing:-.01em;background:none;border:0;padding:4px 2px;margin:-4px 0;
+    font-family:inherit;cursor:pointer;flex-shrink:0;}
+  .tray-title:focus-visible{outline:2px solid var(--em);outline-offset:3px;border-radius:8px;}
+  .tray-chev{width:22px;height:22px;border-radius:50%;border:1px solid var(--edge-2);
+    display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:var(--em);
+    transition:transform .25s ease;}
+  /* folded: only the title bar stays, with the step the formula continues from */
+  .tray.closed{padding-top:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom));}
+  .tray.closed .tray-head{margin-bottom:0;}
+  .tray.closed .tray-chev{transform:rotate(180deg);}
+  .tray.closed .tray-btns,.tray.closed .hint,.tray.closed .tray-scroll,.tray.closed .tray-empty{display:none;}
+  .tray-peek{display:none;flex:1;min-width:0;font-size:12.5px;color:var(--text-2);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;cursor:pointer;}
+  .tray.closed .tray-peek{display:block;}
+  .tray-count.bump{animation:bump .45s cubic-bezier(.2,1.6,.4,1);}
+  @keyframes bump{0%{transform:scale(1.6);}100%{transform:scale(1);}}
   .tray-count{min-width:22px;height:22px;padding:0 7px;border-radius:99px;
     background:var(--em);color:var(--void);font-size:12px;font-weight:700;
     display:inline-flex;align-items:center;justify-content:center;}
@@ -473,12 +488,13 @@ let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={},QUALS=[],KW={},ENTRY={},
 let current=null, view="browse";
 let detailTab="";   /* 'specific' | 'orientation' | 'photo' */
 let NODES=[];        /* {id,parentId,branch,code,name} */
-const BUILD = "formula-tray";   /* shown in the header so the loaded version is never in doubt */
+const BUILD = "formula-fold";   /* shown in the header so the loaded version is never in doubt */
 let activeId=null;   /* where the next pick attaches */
 let pendingBranch=false;   /* next pick opens a declared sub-formula */
 let segment="protocol";    /* 'acim' while the forgiveness part is open */
 let groupSeq=0;
 let parcelMode=false, parcelId=null;   /* live parcel: new picks land in one box */
+let trayOpen=false;         /* the formula tray starts folded; tap its title to open it */
 let justAdded=null;        /* id of the chip that just landed, for its pop-in */
 let collapsed={};          /* node id -> true when its sub-formula is folded */
 let sessions=[];
@@ -639,10 +655,19 @@ if(window.ResizeObserver){
   }).observe(document.getElementById("tray"));
 }
 
-/* answer the tap: the tray edge lights up and the new chip scrolls into view */
+/* fold the formula down to its title bar, or bring it back */
+function toggleTray(force){
+  trayOpen = typeof force==="boolean" ? force : !trayOpen;
+  renderTray();
+}
+
+/* answer the tap: the tray edge lights up and the new chip scrolls into view;
+   while folded, the step count bumps instead */
 function showAdded(id){
   const t=document.getElementById("tray");
   t.classList.remove("pulse"); void t.offsetWidth; t.classList.add("pulse");
+  const cnt=t.querySelector(".tray-count");
+  if(!trayOpen && cnt){ cnt.classList.add("bump"); return; }
   const c=t.querySelector('[data-chip="'+id+'"]');
   if(c) c.scrollIntoView({block:"nearest"});
 }
@@ -1241,7 +1266,12 @@ function renderTray(){
   const n=total();
   const cur=activeId?nodeById(activeId):null;
 
-  let h='<div class="tray-head"><div class="tray-title">Formula <span class="tray-count'+(n?"":" zero")+'" aria-label="'+n+' steps">'+n+'</span></div><div class="tray-btns">' +
+  t.classList.toggle("closed", !trayOpen);
+  let h='<div class="tray-head"><button class="tray-title" onclick="toggleTray()" aria-expanded="'+trayOpen+'" ' +
+    'aria-label="'+(trayOpen?"Hide":"Show")+' the formula, '+n+' steps">Formula <span class="tray-count'+(n?"":" zero")+'">'+n+'</span>' +
+    '<span class="tray-chev" aria-hidden="true">\u25BE</span></button>' +
+    '<span class="tray-peek" onclick="toggleTray()">'+(cur?esc(cur.code+" "+cur.name):"")+'</span>' +
+    '<div class="tray-btns">' +
     (segment==="acim" ? '<button class="mini" onclick="closeAcim()">Close ACIM</button>' : '') +
     '<button class="mini'+(parcelMode?" go":"")+'" onclick="startParceling()" '+(parcelMode?"disabled":"")+'>Parceling</button>' +
     (parcelMode ? '<button class="mini go" onclick="closeParceling()">Close parceling</button>' : '') +
@@ -1623,6 +1653,8 @@ function command(raw){
   if(/\b(protocollo|inizio|home)\b/.test(t)){ go(null); say("Protocollo"); return; }
   if(/\b(sessioni|registro)\b/.test(t)){ setView("log"); say("Sessioni"); return; }
   if(/\b(aggiungi|prendi)\b/.test(t)){ if(current){ addPick(current); say("Aggiunto"); } return; }
+  if(/\b(mostra|apri) (la )?formula\b/.test(t)){ toggleTray(true); say("Formula aperta"); return; }
+  if(/\b(nascondi|chiudi) (la )?formula\b/.test(t)){ toggleTray(false); say("Formula nascosta"); return; }
   if(/\b(parallela|nuova formula)\b/.test(t)){ newFormula(); say("Nuova formula"); return; }
   if(/\b(sottoformula|sotto formula|ramo)\b/.test(t)){ startSub(); say("Sottoformula"); return; }
   if(/\b(chiudi)\b/.test(t)){ closeSub(); say("Tornato al ramo principale"); return; }
