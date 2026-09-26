@@ -63,11 +63,12 @@ the owner writes to Claude in Italian.
   Students, `ACIM.3` Manual for Teachers, `ACIM.4` The Song of Prayer.
   `dim_protocol_node` has `link_url` and `sources`: a node with `link_url`
   shows "Read the original at …" and its card a small link.
-  **Open:** the chapter / lesson / section lists under the four ACIM books.
-  acim.org (Foundation for Inner Peace) is blocked by this environment's
-  network policy, and titles are never written from memory; once the owner
-  allows acim.org / lessons.acim.org, fetch the official tables of contents
-  and insert one row per chapter with `link_url` and `sources`.
+  The four books hold all 788 official entries (chapters, sections, lessons
+  1–365), each with its `+` and a link to its page on acim.org
+  (`sql/2026-09-26_acim_books.sql`). Source: acim.org's own table of
+  contents, `https://acim.org/we-api/en/toc` (JSON). acim.org answers 403
+  to curl's default User-Agent: send a browser User-Agent. The environment
+  "BodyTalk" needed its Network access changed from "Trusted" to allow it.
   Healing Code and Access are empty until the owner gives their content.
   Before it:
 - Build `sessions-independent`: saved sessions no longer depend on the
