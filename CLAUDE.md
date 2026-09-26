@@ -38,6 +38,13 @@ the owner writes to Claude in Italian.
 - The PaRama chart wording is entered by the owner, never written by Claude.
 - Commit and push at the end of every piece of work; nothing is kept
   otherwise. Work lands on `main` through a pull request.
+- **Don't ask, publish.** When a piece of work is done and checked: push,
+  open the pull request, merge it into `main` yourself, then confirm the
+  Netlify deploy. Netlify project `bodytalk-protocol-navigator`
+  (site id `27ad126a-6ff8-44b6-a841-f0abfd0e0fc4`,
+  https://bodytalk-protocol-navigator.netlify.app) deploys `main`
+  automatically; check the new deploy is `ready` on the merge commit and
+  tell the owner the live `BUILD`.
 
 ## Starting a new session
 
@@ -47,6 +54,11 @@ the owner writes to Claude in Italian.
 
 ## Current state
 
+- Build `formula-hide`: the formula can also disappear completely. The `×`
+  at the right of the tray title bar hides it; a small "Formula n" pill
+  (bottom left) brings it back open. Voice: "nascondi/togli formula" hides,
+  "mostra/apri formula" shows, "chiudi formula" folds. Adding a step while
+  hidden bumps the pill's count. Before it:
 - Build `formula-fold`: the formula tray starts folded to a title bar
   ("Formula", step count, current step); tapping the title (or saying
   "mostra/nascondi formula") opens and closes it. While folded, adding a step

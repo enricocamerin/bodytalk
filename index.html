@@ -225,6 +225,17 @@
     -webkit-overflow-scrolling:touch;padding:2px;}
   .tray-btns::-webkit-scrollbar{display:none;}
   .tray-title{flex-shrink:0;}
+  /* hide: the tray leaves the screen entirely, a small pill brings it back */
+  .tray-hide{flex-shrink:0;width:30px;height:30px;border-radius:50%;border:1px solid var(--edge-2);
+    background:transparent;color:var(--text-2);font-size:16px;line-height:1;cursor:pointer;
+    font-family:inherit;display:inline-flex;align-items:center;justify-content:center;}
+  .tray-hide:focus-visible,.tray-pill:focus-visible{outline:2px solid var(--em);outline-offset:3px;}
+  .tray-pill{position:fixed;left:18px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:18;
+    display:flex;align-items:center;gap:8px;height:44px;padding:0 16px 0 14px;border-radius:99px;
+    background:rgba(17,29,29,.95);backdrop-filter:blur(20px);border:1px solid rgba(61,220,151,.55);
+    box-shadow:0 8px 24px rgba(0,0,0,.45);color:var(--text);font-family:inherit;
+    font-size:14px;font-weight:600;cursor:pointer;}
+  .tray-pill[hidden]{display:none;}
   .mini{background:transparent;border:1px solid var(--edge-2);color:var(--text-2);
     border-radius:99px;padding:6px 13px;font-size:11.5px;cursor:pointer;font-family:inherit;font-weight:500;
     white-space:nowrap;flex-shrink:0;}
@@ -455,6 +466,7 @@
 
   <main id="main"><div class="loading">Loading protocol</div></main>
   <div class="tray" id="tray" style="display:none"></div>
+  <button class="tray-pill" id="trayPill" onclick="showTray()" hidden></button>
 </div>
 
 <div id="gate">
@@ -488,13 +500,14 @@ let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={},QUALS=[],KW={},ENTRY={},
 let current=null, view="browse";
 let detailTab="";   /* 'specific' | 'orientation' | 'photo' */
 let NODES=[];        /* {id,parentId,branch,code,name} */
-const BUILD = "formula-fold";   /* shown in the header so the loaded version is never in doubt */
+const BUILD = "formula-hide";   /* shown in the header so the loaded version is never in doubt */
 let activeId=null;   /* where the next pick attaches */
 let pendingBranch=false;   /* next pick opens a declared sub-formula */
 let segment="protocol";    /* 'acim' while the forgiveness part is open */
 let groupSeq=0;
 let parcelMode=false, parcelId=null;   /* live parcel: new picks land in one box */
 let trayOpen=false;         /* the formula tray starts folded; tap its title to open it */
+let trayHidden=false;       /* the whole tray is off screen; the pill brings it back */
 let justAdded=null;        /* id of the chip that just landed, for its pop-in */
 let collapsed={};          /* node id -> true when its sub-formula is folded */
 let sessions=[];
@@ -651,14 +664,32 @@ function addPick(code,ev){
 /* the mic and voice panels float just above the tray, however tall it grows */
 if(window.ResizeObserver){
   new ResizeObserver(function(es){
-    document.documentElement.style.setProperty("--tray-h", es[0].target.offsetHeight+"px");
+    trayLift(es[0].target.offsetHeight);
   }).observe(document.getElementById("tray"));
+}
+
+/* while hidden, the floating panels only clear the pill */
+function trayLift(h){
+  document.documentElement.style.setProperty("--tray-h", (trayHidden&&view!=="log"?58:h)+"px");
 }
 
 /* fold the formula down to its title bar, or bring it back */
 function toggleTray(force){
   trayOpen = typeof force==="boolean" ? force : !trayOpen;
+  trayHidden = false;
   renderTray();
+}
+
+/* make the formula disappear altogether, or reappear (opened) */
+function hideTray(){
+  trayHidden = true;
+  renderTray();
+  document.getElementById("trayPill").focus();
+}
+function showTray(){
+  trayHidden = false; trayOpen = true;
+  renderTray();
+  const b=document.querySelector("#tray .tray-title"); if(b) b.focus();
 }
 
 /* answer the tap: the tray edge lights up and the new chip scrolls into view;
@@ -666,8 +697,8 @@ function toggleTray(force){
 function showAdded(id){
   const t=document.getElementById("tray");
   t.classList.remove("pulse"); void t.offsetWidth; t.classList.add("pulse");
-  const cnt=t.querySelector(".tray-count");
-  if(!trayOpen && cnt){ cnt.classList.add("bump"); return; }
+  const cnt=(trayHidden?document.getElementById("trayPill"):t).querySelector(".tray-count");
+  if((trayHidden||!trayOpen) && cnt){ cnt.classList.add("bump"); return; }
   const c=t.querySelector('[data-chip="'+id+'"]');
   if(c) c.scrollIntoView({block:"nearest"});
 }
@@ -1012,7 +1043,8 @@ function kidsGridHTML(ch, wide){
 /* ---------- render ---------- */
 function render(){
   const m=document.getElementById("main");
-  document.getElementById("tray").style.display = view==="log" ? "none" : "";
+  document.getElementById("tray").style.display = (view==="log"||trayHidden) ? "none" : "";
+  document.getElementById("trayPill").hidden = view==="log" || !trayHidden;
   document.getElementById("crumbs").style.display = view==="log" ? "none" : "";
   document.getElementById("searchBox").style.display = view==="log" ? "none" : "";
   if(view==="log"){ renderLog(); return; }
@@ -1266,6 +1298,12 @@ function renderTray(){
   const n=total();
   const cur=activeId?nodeById(activeId):null;
 
+  const pill=document.getElementById("trayPill");
+  pill.innerHTML='Formula <span class="tray-count'+(n?"":" zero")+'">'+n+'</span>';
+  pill.setAttribute("aria-label","Show the formula, "+n+" steps");
+  t.style.display = (view==="log"||trayHidden) ? "none" : "";
+  pill.hidden = view==="log" || !trayHidden;
+  trayLift(t.offsetHeight);
   t.classList.toggle("closed", !trayOpen);
   let h='<div class="tray-head"><button class="tray-title" onclick="toggleTray()" aria-expanded="'+trayOpen+'" ' +
     'aria-label="'+(trayOpen?"Hide":"Show")+' the formula, '+n+' steps">Formula <span class="tray-count'+(n?"":" zero")+'">'+n+'</span>' +
@@ -1279,7 +1317,8 @@ function renderTray(){
     '<button class="mini'+(insideSub()?" go":"")+'" onclick="closeSub()" '+(!insideSub()?"disabled":"")+'>Close sub</button>' +
     '<button class="mini" onclick="newFormula()" '+(!n?"disabled":"")+'>Parallel</button>' +
     '<button class="mini" onclick="clearAll()" '+(!n?"disabled":"")+'>Clear</button>' +
-    '<button class="mini go" onclick="openSave()" '+(!n?"disabled":"")+'>Save</button></div></div>';
+    '<button class="mini go" onclick="openSave()" '+(!n?"disabled":"")+'>Save</button></div>' +
+    '<button class="tray-hide" onclick="hideTray()" aria-label="Hide the formula completely" title="Hide">\u00D7</button></div>';
 
   if(!n){
     h+='<div class="tray-empty">Tap <b>+</b> on a card to add its step here.</div>';
@@ -1653,8 +1692,9 @@ function command(raw){
   if(/\b(protocollo|inizio|home)\b/.test(t)){ go(null); say("Protocollo"); return; }
   if(/\b(sessioni|registro)\b/.test(t)){ setView("log"); say("Sessioni"); return; }
   if(/\b(aggiungi|prendi)\b/.test(t)){ if(current){ addPick(current); say("Aggiunto"); } return; }
-  if(/\b(mostra|apri) (la )?formula\b/.test(t)){ toggleTray(true); say("Formula aperta"); return; }
-  if(/\b(nascondi|chiudi) (la )?formula\b/.test(t)){ toggleTray(false); say("Formula nascosta"); return; }
+  if(/\b(mostra|apri) (la )?formula\b/.test(t)){ showTray(); say("Formula aperta"); return; }
+  if(/\b(nascondi|togli) (la )?formula\b/.test(t)){ hideTray(); say("Formula nascosta"); return; }
+  if(/\b(chiudi|piega) (la )?formula\b/.test(t)){ toggleTray(false); say("Formula chiusa"); return; }
   if(/\b(parallela|nuova formula)\b/.test(t)){ newFormula(); say("Nuova formula"); return; }
   if(/\b(sottoformula|sotto formula|ramo)\b/.test(t)){ startSub(); say("Sottoformula"); return; }
   if(/\b(chiudi)\b/.test(t)){ closeSub(); say("Tornato al ramo principale"); return; }
