@@ -132,6 +132,11 @@
   .c-leaf{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--em);
     letter-spacing:.12em;text-transform:uppercase;}
 
+  .c-orig{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--em);text-decoration:none;
+    padding:8px 0;letter-spacing:.04em;}
+  .c-orig:focus-visible,.orig:focus-visible{outline:2px solid var(--em);outline-offset:3px;border-radius:6px;}
+  .orig{display:inline-flex;align-items:center;gap:6px;margin-top:18px;padding:10px 16px;border-radius:99px;
+    border:1px solid var(--em);color:var(--em);text-decoration:none;font-size:14px;font-weight:500;}
   .c-add{width:38px;height:38px;flex-shrink:0;border-radius:50%;border:1px solid var(--em);
     background:transparent;color:var(--em);font-size:24px;line-height:1;cursor:pointer;
     display:flex;align-items:center;justify-content:center;font-family:inherit;font-weight:400;
@@ -465,7 +470,7 @@ let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={},QUALS=[],KW={},ENTRY={},
 let current=null, view="browse";
 let detailTab="";   /* 'specific' | 'orientation' | 'photo' */
 let NODES=[];        /* {id,parentId,branch,code,name} */
-const BUILD = "sessions-independent";   /* shown in the header so the loaded version is never in doubt */
+const BUILD = "four-domains";   /* shown in the header so the loaded version is never in doubt */
 let activeId=null;   /* where the next pick attaches */
 let pendingBranch=false;   /* next pick opens a declared sub-formula */
 let segment="protocol";    /* 'acim' while the forgiveness part is open */
@@ -575,12 +580,26 @@ function natSort(a,b){
 }
 function isQualRoot(code){ return QUALS.some(function(q){return q.code===code;}); }
 
+/* the home page holds four domains (ACIM, BodyTalk, Healing Code, Access):
+   level-1 nodes whose code is not a number. The BodyTalk protocol keeps its
+   numeric codes; its sections sit inside the "BT" domain. */
+function isDomain(code){ return !!code && code.indexOf(".")<0 && !/^[0-9]/.test(code); }
+function inBodyTalk(code){ return !!code && /^[0-9]/.test(code); }
+function upOf(code){
+  if(!code) return null;
+  const p=code.split("."); p.pop();
+  if(p.length) return p.join(".");
+  return inBodyTalk(code) && byCode.BT ? "BT" : null;
+}
 function kids(code){
+  const hasDomains = !!byCode.BT;
+  if(hasDomains && !code) return TREE.filter(function(n){ return n.level===1 && isDomain(n.code); }).sort(natSort);
+  if(hasDomains && code==="BT") code=null;
   const has=(code!==null&&code!==undefined&&code!=="");
   const depth=has?code.split(".").length+1:1;
   return TREE.filter(function(n){
     if(n.level!==depth) return false;
-    if(!has) return !isQualRoot(n.code);   /* qualifier lists live in their own tab */
+    if(!has) return !isQualRoot(n.code) && !isDomain(n.code);   /* qualifier lists live in their own tab */
     return n.code.indexOf(code+".")===0 && n.code.split(".").length===depth;
   }).sort(natSort);
 }
@@ -595,7 +614,9 @@ function qualItems(setCode){
 function ancestors(code){
   if(!code) return [];
   const p=code.split(".");
-  return p.map(function(_,i){return byCode[p.slice(0,i+1).join(".")];}).filter(Boolean);
+  const a=p.map(function(_,i){return byCode[p.slice(0,i+1).join(".")];}).filter(Boolean);
+  if(inBodyTalk(code) && byCode.BT) a.unshift(byCode.BT);
+  return a;
 }
 
 
@@ -604,7 +625,7 @@ function ancestors(code){
 function addPick(code,ev){
   if(ev){ ev.stopPropagation(); }
   if(!NODES.length){
-    segment = (ENTRY[code] || isFromEntrySet(code)) ? "acim" : "protocol";
+    segment = (ENTRY[code] || isFromEntrySet(code) || code.indexOf("ACIM")===0) ? "acim" : "protocol";
   }
   const id=newId();
   const branch=pendingBranch;
@@ -969,6 +990,11 @@ function imageCount(code){
   return n;
 }
 
+function hostOf(u){ try{ return new URL(u).hostname.replace(/^www\./,""); }catch(e){ return "source"; } }
+function origLink(k){
+  return k.link_url ? '<a class="c-orig" href="'+esc(k.link_url)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" ' +
+    'aria-label="Open the original of '+esc(k.name)+'">'+esc(hostOf(k.link_url))+' \u2197</a>' : '';
+}
 function kidsGridHTML(ch, wide){
   let h='<div class="grid'+(wide?" wide":"")+'">';
   ch.forEach(function(k){
@@ -978,14 +1004,14 @@ function kidsGridHTML(ch, wide){
        '<div class="c-accent" style="background:'+(isEntry?"var(--em)":hueOf(k.code))+';'+
        (isEntry?"width:5px;":"")+'"></div>';
     if(wide){
-      h+='<div style="flex:1"><div class="c-code">'+k.code+'</div>' +
+      h+='<div style="flex:1">'+(isDomain(k.code)?'':'<div class="c-code">'+k.code+'</div>') +
          '<div class="c-name">'+k.name+'</div></div>' +
-         '<div class="c-count">'+(n?n:"")+'</div>' +
+         origLink(k) + '<div class="c-count">'+(n?n:"")+'</div>' +
          '<button class="c-add" aria-label="Add '+k.code+' to the formula" onclick="addPick(&#39;'+k.code+'&#39;,event)">+</button>';
     } else {
       h+='<div class="c-code">'+k.code+'</div><div class="c-name">'+k.name+'</div>' +
          '<div class="c-foot">' +
-         (n?'<span class="c-count">'+n+' inside</span>':(lk?'<span class="c-leaf">description</span>':'<span></span>')) +
+         (n?'<span class="c-count">'+n+' inside</span>':(k.link_url?origLink(k):(lk?'<span class="c-leaf">description</span>':'<span></span>'))) +
          '<button class="c-add" aria-label="Add '+k.code+' to the formula" onclick="addPick(&#39;'+k.code+'&#39;,event)">+</button>' +
          '</div>';
     }
@@ -1010,9 +1036,8 @@ function render(){
   let h="";
 
   if(current){
-    const p=current.split("."); p.pop();
-    const upCode = p.length ? p.join(".") : null;
-    const upName = upCode ? (byCode[upCode]||{}).name : "Protocol";
+    const upCode = upOf(current);
+    const upName = upCode ? (byCode[upCode]||{}).name : "Home";
     h+='<div class="nav">' +
        '<button onclick="go('+(upCode?"&#39;"+upCode+"&#39;":"null")+')">' +
          '<span class="g">\u2190</span><span>'+short2(upName)+'</span></button>' +
@@ -1020,11 +1045,11 @@ function render(){
        '</div>';
   }
   const ep = node ? ENTRY[node.code] : null;
-  h+='<div class="eyebrow">'+(node?node.code:"Protocol")+'</div>';
+  h+='<div class="eyebrow">'+(node?(isDomain(node.code)?"Domain":node.code):"Home")+'</div>';
   h+= node
     ? '<div class="n-head"><h1>'+node.name+'</h1>' +
       '<button class="c-add" aria-label="Add '+node.code+' to the formula" onclick="addPick(&#39;'+node.code+'&#39;,event)">+</button></div>'
-    : '<h1>BodyTalk Protocol</h1>';
+    : '<h1>Protocol Navigator</h1>';
 
   const epSet       = (node && ENTRY[node.code]) ? ENTRY[node.code].next_set : null;
   const insideCh    = epSet ? ch.filter(function(k){return k.code!==epSet;}) : ch;
@@ -1050,7 +1075,7 @@ function render(){
   if(detailTab==="phys" && !phys) detailTab = "";
   const isEntryNode = !!(ep && ep.next_set);
 
-  const hasAnyTab = !isEntryNode &&
+  const hasAnyTab = !isEntryNode && !(node && isDomain(node.code)) &&
     (hasKidsHere || nPhoto || kwList.length || phys || (node && qsets.length));
 
   if(node && isEntryNode){
@@ -1133,7 +1158,17 @@ function render(){
   } else if(detailTab==="photo" && nPhoto){
     h+=imagesHTML(node.code);
   } else if(hasKidsHere){
-    h+=kidsGridHTML(insideCh, !current);
+    h+=kidsGridHTML(insideCh, !current || current==="BT");
+  }
+
+  /* reading material (ACIM, ...) links to the original publisher's page */
+  if(node && node.link_url){
+    h+='<a class="orig" href="'+esc(node.link_url)+'" target="_blank" rel="noopener">Read the original at ' +
+       esc(hostOf(node.link_url))+' <span aria-hidden="true">\u2197</span></a>';
+  }
+  if(node && node.sources) h+='<div class="kw-src">'+esc(node.sources)+'</div>';
+  if(node && isDomain(node.code) && !hasKidsHere){
+    h+='<div class="note" style="margin-top:20px">Nothing here yet \u2014 the content for '+node.name+' will be added.</div>';
   }
 
   if(hasDesc){
@@ -1239,10 +1274,10 @@ function renderSearch(){
 
 function renderCrumbs(){
   const el=document.getElementById("crumbs");
-  let h='<button onclick="go(null)">Protocol</button>';
+  let h='<button onclick="go(null)">Home</button>';
   const a=ancestors(current);
   a.forEach(function(n,i){
-    h+='<span>/</span><button class="'+(i===a.length-1?"here":"")+'" onclick="go(&#39;'+n.code+'&#39;)">'+n.code+'</button>';
+    h+='<span>/</span><button class="'+(i===a.length-1?"here":"")+'" onclick="go(&#39;'+n.code+'&#39;)">'+(isDomain(n.code)?n.name:n.code)+'</button>';
   });
   el.innerHTML=h;
 }
@@ -1499,7 +1534,7 @@ function savedTree(rows,pid){
 }
 function savedSeg(code){
   if(!code) return "protocol";
-  return (ENTRY[code] || isFromEntrySet(code)) ? "acim" : "protocol";
+  return (ENTRY[code] || isFromEntrySet(code) || code.indexOf("ACIM")===0) ? "acim" : "protocol";
 }
 
 function savedChain(rows,node){
