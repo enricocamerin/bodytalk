@@ -47,6 +47,11 @@ the owner writes to Claude in Italian.
 
 ## Current state
 
+- Build `formula-hide`: the formula can also disappear completely. The `×`
+  at the right of the tray title bar hides it; a small "Formula n" pill
+  (bottom left) brings it back open. Voice: "nascondi/togli formula" hides,
+  "mostra/apri formula" shows, "chiudi formula" folds. Adding a step while
+  hidden bumps the pill's count. Before it:
 - Build `formula-fold`: the formula tray starts folded to a title bar
   ("Formula", step count, current step); tapping the title (or saying
   "mostra/nascondi formula") opens and closes it. While folded, adding a step
