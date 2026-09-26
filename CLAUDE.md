@@ -16,7 +16,7 @@ the owner writes to Claude in Italian.
 | `_headers` | Hosting cache rules (every path revalidates, so a new deploy shows up on reload). |
 | `sql/` | Data migrations applied to the Supabase project. See `sql/README.md`. |
 | `docs/` | Standalone reference pages (e.g. `brain-chart-study-key.html`). |
-| `.claude/skills/` | Project skills: `frontend-design` (visual design guidance) and `webapp-testing` (Playwright checks). Copied from github.com/anthropics/skills, Apache-2.0. |
+| `.claude/skills/` | Project skills: `ship` (change → browser check → PR → merge → Netlify, without asking; written for this project), `frontend-design` (visual design guidance) and `webapp-testing` (Playwright checks). The last two are copied from github.com/anthropics/skills, Apache-2.0. |
 
 ## How the app works
 
@@ -44,7 +44,7 @@ the owner writes to Claude in Italian.
   (site id `27ad126a-6ff8-44b6-a841-f0abfd0e0fc4`,
   https://bodytalk-protocol-navigator.netlify.app) deploys `main`
   automatically; check the new deploy is `ready` on the merge commit and
-  tell the owner the live `BUILD`.
+  tell the owner the live `BUILD`. The `ship` skill has the full steps.
 
 ## Starting a new session
 
@@ -54,15 +54,17 @@ the owner writes to Claude in Italian.
 
 ## Current state
 
+- Build `plus-everywhere`: the microphone and all voice commands are gone.
+  Every node page, down to the last leaf, has a `+` beside its title that
+  adds that node to the formula; the top-level section cards have a `+` too.
+  Before it:
 - Build `formula-hide`: the formula can also disappear completely. The `×`
   at the right of the tray title bar hides it; a small "Formula n" pill
-  (bottom left) brings it back open. Voice: "nascondi/togli formula" hides,
-  "mostra/apri formula" shows, "chiudi formula" folds. Adding a step while
-  hidden bumps the pill's count. Before it:
+  (bottom left) brings it back open. Adding a step while hidden bumps the
+  pill's count. Before it:
 - Build `formula-fold`: the formula tray starts folded to a title bar
-  ("Formula", step count, current step); tapping the title (or saying
-  "mostra/nascondi formula") opens and closes it. While folded, adding a step
+  ("Formula", step count, current step); tapping the title opens and closes it. While folded, adding a step
   bumps the count. Before it: `formula-tray` (PR #2: raised tray, emerald
-  edge, current step filled, mic above the tray) and `search-a11y`.
+  edge, current step filled) and `search-a11y`.
 - Section 1 › Brain (`1.10`) data is in production; the `CHART.*` note bodies
   wait for the owner's chart wording (`sql/brain-chart-notes-fill-in.sql`).
