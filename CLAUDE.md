@@ -38,6 +38,13 @@ the owner writes to Claude in Italian.
 - The PaRama chart wording is entered by the owner, never written by Claude.
 - Commit and push at the end of every piece of work; nothing is kept
   otherwise. Work lands on `main` through a pull request.
+- **Don't ask, publish.** When a piece of work is done and checked: push,
+  open the pull request, merge it into `main` yourself, then confirm the
+  Netlify deploy. Netlify project `bodytalk-protocol-navigator`
+  (site id `27ad126a-6ff8-44b6-a841-f0abfd0e0fc4`,
+  https://bodytalk-protocol-navigator.netlify.app) deploys `main`
+  automatically; check the new deploy is `ready` on the merge commit and
+  tell the owner the live `BUILD`.
 
 ## Starting a new session
 
