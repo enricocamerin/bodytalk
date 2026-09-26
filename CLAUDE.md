@@ -55,6 +55,10 @@ the owner writes to Claude in Italian.
 
 ## Current state
 
+- Build `tray-buttons-wrap`: the tray actions (Parceling, Sub-formula, Close
+  sub, Parallel, Clear, Save) sit on their own row under the title and wrap.
+  They used to scroll sideways in one hidden-scrollbar row, so on a phone
+  Parallel, Clear and Save were off screen.
 - Build `step-notes`: every step in the formula has a pen (✎) that opens a
   note for that step (`openNote` / `saveNote`, kept on the node as `note`).
   A noted step shows its first words in the chip; the note is saved in
