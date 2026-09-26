@@ -297,6 +297,17 @@
   }
   .chip .cc{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--em);}
   .chip .x{color:var(--text-3);cursor:pointer;font-size:14px;line-height:1;}
+  /* a note per step: the pen opens it, a noted step shows its first words */
+  .chip .nb{color:var(--text-3);cursor:pointer;font-size:13px;line-height:1;padding:2px;border-radius:6px;}
+  .chip .nb.on{color:var(--em);}
+  .chip.here .nb,.chip.here .nb.on{color:rgba(8,12,14,.7);}
+  .chip .nb:focus-visible{outline:2px solid var(--em);outline-offset:2px;}
+  .chip .cn{font-size:11.5px;font-style:italic;color:var(--text-2);max-width:9em;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .chip.here .cn{color:rgba(8,12,14,.72);}
+  .step-note{display:block;flex-basis:100%;font-size:12.5px;font-style:italic;color:var(--text-2);
+    margin:0 0 4px 14px;white-space:pre-wrap;}
+  .note-for{font-size:13px;color:var(--text-2);margin:-10px 0 12px;}
   .link{color:var(--em);font-size:11px;}
   .sub{position:relative;margin:8px 0 5px 14px;padding-left:12px;
     border-left:2px solid var(--line,rgba(255,255,255,.12));}
@@ -470,7 +481,7 @@ let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={},QUALS=[],KW={},ENTRY={},
 let current=null, view="browse";
 let detailTab="";   /* 'specific' | 'orientation' | 'photo' */
 let NODES=[];        /* {id,parentId,branch,code,name} */
-const BUILD = "definition-tabs";   /* shown in the header so the loaded version is never in doubt */
+const BUILD = "step-notes";   /* shown in the header so the loaded version is never in doubt */
 let activeId=null;   /* where the next pick attaches */
 let pendingBranch=false;   /* next pick opens a declared sub-formula */
 let segment="protocol";    /* 'acim' while the forgiveness part is open */
@@ -1447,8 +1458,37 @@ function chipHTML(nd){
   return '<span class="chip'+(here?" here":"")+(inParcel?" sel":"")+(nd.id===justAdded?" new":"")+'" data-chip="'+nd.id+'" ' +
     'onclick="'+act+'">' +
     '<span class="cc">'+nd.code+'</span>'+short(nd.name)+
-    (parcelMode?'':'<span class="x" role="button" aria-label="Remove" onclick="event.stopPropagation();removeNode(&#39;'+nd.id+'&#39;)">\u00D7</span>')+
+    (nd.note?'<span class="cn" title="'+esc(nd.note)+'">'+esc(nd.note)+'</span>':'')+
+    (parcelMode?'':'<span class="nb'+(nd.note?" on":"")+'" role="button" tabindex="0" aria-label="'+(nd.note?"Edit":"Add")+' a note for '+esc(nd.name)+'" ' +
+      'onclick="event.stopPropagation();openNote(&#39;'+nd.id+'&#39;)" onkeydown="if(event.key===&#39;Enter&#39;){event.stopPropagation();openNote(&#39;'+nd.id+'&#39;)}">\u270E</span>' +
+      '<span class="x" role="button" aria-label="Remove" onclick="event.stopPropagation();removeNode(&#39;'+nd.id+'&#39;)">\u00D7</span>')+
     '</span>';
+}
+
+/* ---------- step notes ---------- */
+function openNote(id){
+  const nd=nodeById(id); if(!nd) return;
+  const d=document.createElement("div");
+  d.className="modal-bg"; d.id="nm";
+  d.innerHTML='<div class="modal" role="dialog" aria-label="Note"><div class="grab"></div><h3>Note</h3>' +
+    '<div class="note-for">'+esc(nd.code)+' \u00B7 '+esc(nd.name)+'</div>' +
+    '<textarea id="nT" placeholder="Write a note for this step"></textarea>' +
+    '<div class="mb"><button onclick="closeNote()">Cancel</button>' +
+    '<button class="go" onclick="saveNote(&#39;'+id+'&#39;)">Save note</button></div></div>';
+  d.addEventListener("click",function(e){ if(e.target===d) closeNote(); });
+  d.addEventListener("keydown",function(e){
+    if(e.key==="Escape") closeNote();
+    if(e.key==="Enter" && (e.metaKey||e.ctrlKey)) saveNote(id);
+  });
+  document.body.appendChild(d);
+  const t=document.getElementById("nT"); t.value=nd.note||"";
+  setTimeout(function(){ t.focus(); },60);
+}
+function closeNote(){ const m=document.getElementById("nm"); if(m) m.remove(); }
+function saveNote(id){
+  const nd=nodeById(id); const t=document.getElementById("nT");
+  if(nd && t){ const v=t.value.trim(); if(v) nd.note=v; else delete nd.note; }
+  closeNote(); renderTray();
 }
 
 /* ---------- save / log ---------- */
@@ -1490,7 +1530,7 @@ async function doSave(){
     return { tmp:nd.id, parent_tmp:nd.parentId, kind:"step",
              is_branch: !!nd.branch, step_no:order[key],
              group_no: nd.group || null,
-             protocol_code: nd.code, protocol_name: nd.name };
+             protocol_code: nd.code, protocol_name: nd.name, note: nd.note || null };
   });
   const b=document.querySelector(".mb .go"); b.textContent="Saving"; b.disabled=true;
   try{
@@ -1584,6 +1624,7 @@ function savedChain(rows,node){
         if(j) h+='<span class="link">\u2014</span>';
         const nm=esc(stepName(n))||"\u2014";
         h+='<span class="chip" data-chip="'+n.id+'"><span class="cc">'+n.protocol_code+'</span>'+nm+'</span>';
+        if(n.note) h+='<span class="step-note">\u270E '+esc(n.note)+'</span>';
       });
       if(b.g) h+='</span></span>';
     });
