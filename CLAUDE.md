@@ -15,6 +15,7 @@ the owner writes to Claude in Italian.
 | `index.html` | The whole app: HTML, one `<style>` block, one `<script>` block. No framework, no build step, no npm. |
 | `_headers` | Hosting cache rules (every path revalidates, so a new deploy shows up on reload). |
 | `sql/` | Data migrations applied to the Supabase project. See `sql/README.md`. |
+| `supabase/functions/protocol-data/index.ts` | Source of the edge function the app talks to. Deploy it (Supabase MCP `deploy_edge_function`, `verify_jwt: false`, the access code is checked inside) whenever it changes. |
 | `docs/` | Standalone reference pages (e.g. `brain-chart-study-key.html`). |
 | `.claude/skills/` | Project skills: `ship` (change → browser check → PR → merge → Netlify, without asking; written for this project), `frontend-design` (visual design guidance) and `webapp-testing` (Playwright checks). The last two are copied from github.com/anthropics/skills, Apache-2.0. |
 
@@ -54,6 +55,13 @@ the owner writes to Claude in Italian.
 
 ## Current state
 
+- Build `sessions-independent`: saved sessions no longer depend on the
+  protocol tree. Each saved step keeps its own `protocol_name`; the foreign
+  key from `fact_session_step.protocol_code` to `dim_protocol_node` is gone
+  (`sql/2026-09-26_sessions_independent.sql`), so nodes can be renamed, split
+  or removed freely. The Log shows the saved name. Node 2.2.1 "Birth /
+  Environmental / Body" now holds three children, `2.2.1.1` Birth,
+  `2.2.1.2` Environmental, `2.2.1.3` Body, each with its `+`. Before it:
 - Build `plus-everywhere`: the microphone and all voice commands are gone.
   Every node page, down to the last leaf, has a `+` beside its title that
   adds that node to the formula; the top-level section cards have a `+` too.
