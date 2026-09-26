@@ -465,7 +465,7 @@ let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={},QUALS=[],KW={},ENTRY={},
 let current=null, view="browse";
 let detailTab="";   /* 'specific' | 'orientation' | 'photo' */
 let NODES=[];        /* {id,parentId,branch,code,name} */
-const BUILD = "plus-everywhere";   /* shown in the header so the loaded version is never in doubt */
+const BUILD = "sessions-independent";   /* shown in the header so the loaded version is never in doubt */
 let activeId=null;   /* where the next pick attaches */
 let pendingBranch=false;   /* next pick opens a declared sub-formula */
 let segment="protocol";    /* 'acim' while the forgiveness part is open */
@@ -1427,6 +1427,9 @@ function localDate(){
   return d.toISOString().slice(0,10);
 }
 function closeSave(){ const m=document.getElementById("sm"); if(m) m.remove(); }
+/* a saved step carries its own name: sessions do not depend on the protocol tree */
+function stepName(r){ return r.protocol_name || (byCode[r.protocol_code]||{}).name || ""; }
+
 async function doSave(){
   const title=document.getElementById("sT").value.trim();
   const date=document.getElementById("sD").value;
@@ -1439,7 +1442,7 @@ async function doSave(){
     return { tmp:nd.id, parent_tmp:nd.parentId, kind:"step",
              is_branch: !!nd.branch, step_no:order[key],
              group_no: nd.group || null,
-             protocol_code: nd.code };
+             protocol_code: nd.code, protocol_name: nd.name };
   });
   const b=document.querySelector(".mb .go"); b.textContent="Saving"; b.disabled=true;
   try{
@@ -1487,7 +1490,7 @@ function savedTree(rows,pid){
   roots.forEach(function(r,i){
     const ent = (pid===null) && ENTRY[r.protocol_code];
     h+='<div class="froot'+(ent?" entry":"")+'">';
-    if(ent) h+='<span class="entry-mark">'+((byCode[r.protocol_code]||{}).name||"")+' formula</span>';
+    if(ent) h+='<span class="entry-mark">'+esc(stepName(r))+' formula</span>';
     if(pid===null && roots.length>1) h+='<div class="f-label">Formula '+(i+1)+'</div>';
     h+=savedChain(rows,r);
     h+='</div>';
@@ -1531,7 +1534,7 @@ function savedChain(rows,node){
       h+=open;
       b.nodes.forEach(function(n,j){
         if(j) h+='<span class="link">\u2014</span>';
-        const nm=(byCode[n.protocol_code]||{}).name||"\u2014";
+        const nm=esc(stepName(n))||"\u2014";
         h+='<span class="chip" data-chip="'+n.id+'"><span class="cc">'+n.protocol_code+'</span>'+nm+'</span>';
       });
       if(b.g) h+='</span></span>';
