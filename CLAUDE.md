@@ -55,6 +55,12 @@ the owner writes to Claude in Italian.
 
 ## Current state
 
+- Edge function v23: `dim_protocol_node` (1136 rows) and the links are read
+  page by page (`restAll`, 500 rows a page). PostgREST returns at most 1000
+  rows per request, so above 1000 nodes the last-written rows (the ACIM
+  domain among them) silently went missing. Any table that may grow past a
+  few hundred rows must go through `restAll`. The header shows
+  "BodyTalk · N nodes": N must equal `select count(*) from dim_protocol_node`.
 - Build `four-domains`: the home page shows four domains, ACIM, BodyTalk,
   Healing Code, Access (level-1 nodes with non-numeric codes `ACIM`, `BT`,
   `HC`, `ACCESS`). BodyTalk holds the numeric protocol unchanged: the app
