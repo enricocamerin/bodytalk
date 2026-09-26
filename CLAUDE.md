@@ -55,6 +55,11 @@ the owner writes to Claude in Italian.
 
 ## Current state
 
+- Build `step-notes`: every step in the formula has a pen (✎) that opens a
+  note for that step (`openNote` / `saveNote`, kept on the node as `note`).
+  A noted step shows its first words in the chip; the note is saved in
+  `fact_session_step.note` (the edge function already stored it) and the Log
+  shows it under the step.
 - Build `definition-tabs`: the BodyTalk item tabs follow the chart's Item box
   in order: Orientation (Tentacle in Section 3), Definition, Subsession
   (`dim_qualifier_set.sort_order`). Definition (13) holds the chart's
