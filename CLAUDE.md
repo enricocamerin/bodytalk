@@ -55,6 +55,12 @@ the owner writes to Claude in Italian.
 
 ## Current state
 
+- Workbook labels (`sql/2026-09-26_workbook_part_labels.sql`): "Part I ·
+  Lessons 1 to 220", "Part II · Lessons 221 to 365", Part II groups
+  "Lessons a to b · N. Title". The owner could not find lessons 221–365
+  under acim.org's "What Is …?" group names. BodyTalk › Forgiveness ›
+  Workbook groups 100/200/300 are the owner's own picks (only lesson 65 so
+  far); do not fill them unless asked.
 - Build `tray-buttons-wrap`: the tray actions (Parceling, Sub-formula, Close
   sub, Parallel, Clear, Save) sit on their own row under the title and wrap.
   They used to scroll sideways in one hidden-scrollbar row, so on a phone
