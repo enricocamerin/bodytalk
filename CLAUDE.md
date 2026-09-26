@@ -55,6 +55,21 @@ the owner writes to Claude in Italian.
 
 ## Current state
 
+- Build `four-domains`: the home page shows four domains, ACIM, BodyTalk,
+  Healing Code, Access (level-1 nodes with non-numeric codes `ACIM`, `BT`,
+  `HC`, `ACCESS`). BodyTalk holds the numeric protocol unchanged: the app
+  treats numeric level-1 nodes as children of `BT` (`isDomain`, `inBodyTalk`,
+  `upOf` in `index.html`). ACIM holds `ACIM.1` Text, `ACIM.2` Workbook for
+  Students, `ACIM.3` Manual for Teachers, `ACIM.4` The Song of Prayer.
+  `dim_protocol_node` has `link_url` and `sources`: a node with `link_url`
+  shows "Read the original at …" and its card a small link.
+  **Open:** the chapter / lesson / section lists under the four ACIM books.
+  acim.org (Foundation for Inner Peace) is blocked by this environment's
+  network policy, and titles are never written from memory; once the owner
+  allows acim.org / lessons.acim.org, fetch the official tables of contents
+  and insert one row per chapter with `link_url` and `sources`.
+  Healing Code and Access are empty until the owner gives their content.
+  Before it:
 - Build `sessions-independent`: saved sessions no longer depend on the
   protocol tree. Each saved step keeps its own `protocol_name`; the foreign
   key from `fact_session_step.protocol_code` to `dim_protocol_node` is gone
