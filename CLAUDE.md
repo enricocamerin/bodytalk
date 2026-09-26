@@ -59,15 +59,14 @@ the owner writes to Claude in Italian.
   in order: Orientation (Tentacle in Section 3), Definition, Subsession
   (`dim_qualifier_set.sort_order`). Definition (13) holds the chart's
   Definition box: Consciousness, Physiology, Emotions, 5 Elements, 5 Senses,
-  Other System. **Open:** confirm "Other System" (cut at the photo's edge,
-  maybe "Other Systems"); Orientation (12) and Subsession (14) items still
-  to come from the owner.
+  Other System. Orientation (12) holds the chart's 11 entries, `12.1`–`12.11`
+  (Time … Emotions, `sql/2026-09-26_orientation_items.sql`). **Open:** confirm
+  "Other System" (cut at the photo's edge, maybe "Other Systems"); Subsession
+  (14) items still to come from the owner.
 - Build `orientation-tab`: qualifier tabs have a scope (`dim_qualifier_set`
   `only_under` / `not_under` / `show_empty`; `qualInScope` in `index.html`)
   and show on BodyTalk nodes only. Tentacle (11) shows only in Section 3;
-  Orientation (12) shows everywhere else. **Open:** the Orientation items
-  come from the owner's chart and are not entered yet (the tab shows an
-  "awaiting" note). Add them as children `12.1`, `12.2`, … of node `12`.
+  Orientation (12) shows everywhere else.
 - Edge function v23: `dim_protocol_node` (1136 rows) and the links are read
   page by page (`restAll`, 500 rows a page). PostgREST returns at most 1000
   rows per request, so above 1000 nodes the last-written rows (the ACIM
