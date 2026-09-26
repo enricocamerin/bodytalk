@@ -25,6 +25,17 @@ async function rest(path: string, init?: RequestInit) {
   return text ? JSON.parse(text) : null;
 }
 
+/* PostgREST returns at most 1000 rows per request: read big tables page by page */
+async function restAll(path: string, pageSize = 500) {
+  const out: unknown[] = [];
+  for (let offset = 0; ; offset += pageSize) {
+    const sep = path.includes("?") ? "&" : "?";
+    const page = await rest(`${path}${sep}limit=${pageSize}&offset=${offset}`);
+    out.push(...(page ?? []));
+    if (!page || page.length < pageSize) return out;
+  }
+}
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -73,7 +84,7 @@ Deno.serve(async (req: Request) => {
     if (action === "reference") {
       const [nodes, nervous, planets, organs, matrix, tentacles, technique, acim, notes, images, quals, keywords, entries, links] =
         await Promise.all([
-          rest("dim_protocol_node?select=*"),
+          restAll("dim_protocol_node?select=*&order=code"),
           rest("dim_nervous_system?select=*"),
           rest("dim_planet?select=*"),
           rest("dim_organ_component?select=*"),
@@ -86,7 +97,7 @@ Deno.serve(async (req: Request) => {
           rest("dim_qualifier_set?select=*"),
           rest("dim_keyword?select=*&order=sort_order"),
           rest("dim_entry_point?select=*"),
-          rest("protocol_dimension_link?select=protocol_code,dimension_table,dimension_code"),
+          restAll("protocol_dimension_link?select=protocol_code,dimension_table,dimension_code&order=protocol_code,dimension_table,dimension_code"),
         ]);
       return json({ nodes, nervous, planets, organs, matrix, tentacles, technique, acim, notes, images, quals, keywords, entries, links });
     }
