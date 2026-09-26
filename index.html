@@ -470,7 +470,7 @@ let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={},QUALS=[],KW={},ENTRY={},
 let current=null, view="browse";
 let detailTab="";   /* 'specific' | 'orientation' | 'photo' */
 let NODES=[];        /* {id,parentId,branch,code,name} */
-const BUILD = "four-domains";   /* shown in the header so the loaded version is never in doubt */
+const BUILD = "orientation-tab";   /* shown in the header so the loaded version is never in doubt */
 let activeId=null;   /* where the next pick attaches */
 let pendingBranch=false;   /* next pick opens a declared sub-formula */
 let segment="protocol";    /* 'acim' while the forgiveness part is open */
@@ -579,6 +579,13 @@ function natSort(a,b){
   return 0;
 }
 function isQualRoot(code){ return QUALS.some(function(q){return q.code===code;}); }
+function underCode(code, root){ return code===root || code.indexOf(root+".")===0; }
+function qualInScope(q, node){
+  if(!node || !inBodyTalk(node.code)) return false;
+  if(q.only_under && !underCode(node.code, q.only_under)) return false;
+  if(q.not_under && underCode(node.code, q.not_under)) return false;
+  return true;
+}
 
 /* the home page holds four domains (ACIM, BodyTalk, Healing Code, Access):
    level-1 nodes whose code is not a number. The BodyTalk protocol keeps its
@@ -1060,8 +1067,11 @@ function render(){
   const phys        = node ? physOf(node.code) : null;
 
   /* pick a sensible default tab */
-  /* qualifier sets that actually contain something */
-  const qsets = QUALS.filter(function(q){ return qualItems(q.code).length>0; });
+  /* qualifier sets for this node: BodyTalk nodes only, within the set's scope
+     (only_under / not_under a code), and with items unless shown while empty */
+  const qsets = QUALS.filter(function(q){
+    return qualInScope(q, node) && (qualItems(q.code).length>0 || q.show_empty);
+  });
 
   /* the base tab is the node's own content; qualifier lists are optional
      panels you open and close, never the default */

@@ -55,6 +55,12 @@ the owner writes to Claude in Italian.
 
 ## Current state
 
+- Build `orientation-tab`: qualifier tabs have a scope (`dim_qualifier_set`
+  `only_under` / `not_under` / `show_empty`; `qualInScope` in `index.html`)
+  and show on BodyTalk nodes only. Tentacle (11) shows only in Section 3;
+  Orientation (12) shows everywhere else. **Open:** the Orientation items
+  come from the owner's chart and are not entered yet (the tab shows an
+  "awaiting" note). Add them as children `12.1`, `12.2`, … of node `12`.
 - Edge function v23: `dim_protocol_node` (1136 rows) and the links are read
   page by page (`restAll`, 500 rows a page). PostgREST returns at most 1000
   rows per request, so above 1000 nodes the last-written rows (the ACIM
