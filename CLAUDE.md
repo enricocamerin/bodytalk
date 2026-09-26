@@ -55,6 +55,13 @@ the owner writes to Claude in Italian.
 
 ## Current state
 
+- Build `definition-tabs`: the BodyTalk item tabs follow the chart's Item box
+  in order: Orientation (Tentacle in Section 3), Definition, Subsession
+  (`dim_qualifier_set.sort_order`). Definition (13) holds the chart's
+  Definition box: Consciousness, Physiology, Emotions, 5 Elements, 5 Senses,
+  Other System. **Open:** confirm "Other System" (cut at the photo's edge,
+  maybe "Other Systems"); Orientation (12) and Subsession (14) items still
+  to come from the owner.
 - Build `orientation-tab`: qualifier tabs have a scope (`dim_qualifier_set`
   `only_under` / `not_under` / `show_empty`; `qualInScope` in `index.html`)
   and show on BodyTalk nodes only. Tentacle (11) shows only in Section 3;

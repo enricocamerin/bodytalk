@@ -470,7 +470,7 @@ let TREE=[],byCode={},NS={},PL={},OC={},IMG={},LINKS={},QUALS=[],KW={},ENTRY={},
 let current=null, view="browse";
 let detailTab="";   /* 'specific' | 'orientation' | 'photo' */
 let NODES=[];        /* {id,parentId,branch,code,name} */
-const BUILD = "orientation-tab";   /* shown in the header so the loaded version is never in doubt */
+const BUILD = "definition-tabs";   /* shown in the header so the loaded version is never in doubt */
 let activeId=null;   /* where the next pick attaches */
 let pendingBranch=false;   /* next pick opens a declared sub-formula */
 let segment="protocol";    /* 'acim' while the forgiveness part is open */
@@ -541,7 +541,10 @@ async function loadRef(){
   NS={}; (d.nervous||[]).forEach(function(r){NS[r.code]=r;});
   PL={}; (d.planets||[]).forEach(function(r){PL[r.code]=r;});
   OC={}; (d.organs||[]).forEach(function(r){OC[r.code]=r;});
-  QUALS = d.quals||[];
+  /* qualifier tabs in chart order (Orientation, Definition, Subsession, ...) */
+  QUALS = (d.quals||[]).slice().sort(function(a,b){
+    return (a.sort_order==null?99:a.sort_order)-(b.sort_order==null?99:b.sort_order) || natSort(a,b);
+  });
   AC={}; (d.acim||[]).forEach(function(r){AC[r.code]=r;});
   NOTE={}; (d.notes||[]).forEach(function(r){NOTE[r.code]=r;});
   MX={}; (d.matrix||[]).forEach(function(r){MX[r.code]=r;});
